@@ -9,6 +9,9 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 
 public class PrimaryActivity extends Activity {
 
@@ -16,6 +19,7 @@ public class PrimaryActivity extends Activity {
     Deck d;
 
     String[][] players;
+    String[] crib;
 
     //hard for now
     int myPosition = 1;
@@ -36,6 +40,7 @@ public class PrimaryActivity extends Activity {
         btnDropCards = (Button) findViewById(R.id.btnDropCards);
         btnDisplayCards = (Button) findViewById(R.id.btnDisplayCards);
 
+        //procedurally generate views later
         hand[0] = (TextView) findViewById(R.id.card1);
         hand[1] = (TextView) findViewById(R.id.card2);
         hand[2] = (TextView) findViewById(R.id.card3);
@@ -46,10 +51,9 @@ public class PrimaryActivity extends Activity {
     public void newDeal (View view) {
         //set deck obj
         d = new Deck();
+        crib = new String[4];
 
         int playerCount = 3;   //hard for now
-
-
 
         if (playerCount == 2)
             handCount = 6;
@@ -61,13 +65,12 @@ public class PrimaryActivity extends Activity {
         //pass player count var from game init
         dealer(playerCount);
 
-
-
+        //display show cards button and label cards
         btnDisplayCards.setVisibility(View.VISIBLE);
 
         for (int i = 0; i < handCount; i++) {
             hand[i].setText(players[myPosition][i].toString());
-            hand[i].setVisibility(View.INVISIBLE);
+            hand[i].setVisibility(View.INVISIBLE);  //cut after play implemented ************
         }
     }
 
@@ -81,21 +84,27 @@ public class PrimaryActivity extends Activity {
         playActive = true;
     }
 
-    public void replaceCard (int replacedCard, int playerNumber) {
-        /*String[] temp = new String[handCount];
-        for (int i = 0; i < handCount; i++) {
-            temp[i] = players[playerNumber][i].toString();
-        }*/
+    public void replaceCard (int replacedCard, int playerPosition) {
+
+        boolean dropped = false;
 
         if (selectedCard != handCount - 1)
             for (int i = 0; i < handCount; i++)
-                if (i == replacedCard && i + 1 < handCount)
-                    players[playerNumber][i] = players[playerNumber][i + 1];
-        players[playerNumber][handCount - 1] = null;
+                if (i == replacedCard && i + 1 < handCount) {
+                    if (!dropped) {
+                        addToCrib(players[playerPosition][handCount - 1]);
+                        dropped = true;
+                    }
+                    players[playerPosition][i] = players[playerPosition][i + 1];
+                }
+        else if (!dropped)
+            addToCrib(players[playerPosition][handCount - 1]);
+
+        players[playerPosition][handCount - 1] = null;
 
         System.out.println("");
         for (int i = 0; i < 4; i++)
-            System.out.print(players[playerNumber][i].toString() + ", ");
+            System.out.print(players[playerPosition][i].toString() + ", ");
     }
 
     public void displayHand (View view) {
@@ -110,6 +119,7 @@ public class PrimaryActivity extends Activity {
         btnDisplayCards.setVisibility(View.INVISIBLE);
     }
 
+    //cycle to selected card and mark as tagged to be played/dropped;
     public void tagSelectedCard (View view) {
         switch (view.getId()) {
             case R.id.card1:
@@ -143,7 +153,7 @@ public class PrimaryActivity extends Activity {
             params.topMargin = 5;
             view.setLayoutParams(params);
 
-            //drop button only needed prior to play
+            //drop button only needed prior to play; change from visibility to unclickable in future
             if (!playActive)
                 btnDropCards.setVisibility(View.VISIBLE);
         }
@@ -165,7 +175,12 @@ public class PrimaryActivity extends Activity {
             tempParams.topMargin = 75;
             hand[i].setLayoutParams(tempParams);
         }
+    }
 
+    public void addToCrib (String card) {
+        ArrayList<String> temp = new ArrayList<String>(Arrays.asList(crib));
+        temp.add(card);
+        crib = temp.toArray(new String[4]);
     }
 
     public void dealer(int playerCount) {
@@ -183,6 +198,12 @@ public class PrimaryActivity extends Activity {
                 players[j][i] = d.drawFromDeck() + "";
             }
         }
+
+        //if player count = 3, a card is needed for crib to be balanced at 4;
+        // 2 player = 2 drops per player from 6 card hand
+        // and 4 player = 1 drop per player from 5 card hand
+        if (playerCount == 3)
+            addToCrib(d.drawFromDeck() + "");
 
         /*
         for (int i = 0; i < 5; i++) {
@@ -207,6 +228,8 @@ public class PrimaryActivity extends Activity {
     public String[][] getHands () {
         return players;
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
