@@ -147,4 +147,16 @@
         android:visibility="invisible"
         android:onClick="dropCard" />
 
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play"
+        android:id="@+id/btnPlayCard"
+        android:layout_alignTop="@+id/btnDisplayCards"
+        android:layout_alignRight="@+id/card3"
+        android:layout_alignEnd="@+id/card3"
+        android:onClick="playCard"
+        android:visibility="invisible" />
+
 </RelativeLayout>

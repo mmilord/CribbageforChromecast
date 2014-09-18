@@ -1,7 +1,10 @@
 package cast.chrome.cribbage.cribbageforchromecast;
 
 import android.app.Activity;
+import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,6 +18,7 @@ import java.util.Arrays;
 
 public class PrimaryActivity extends Activity {
 
+    int MASTER_HEIGHT, MASTER_WIDTH, PADDING_SIDE = 64, PADDING_TOP = 16, PADDING_BOT = 16, FOUR_CARD_SIZE, FIVE_CARD_SIZE, SIX_CARD_SIZE;
 
     Deck d;
 
@@ -30,15 +34,29 @@ public class PrimaryActivity extends Activity {
 
     TextView[] hand = new TextView[handCount];
 
-    Button btnDropCards, btnDisplayCards;
+    Button btnDropCards, btnDisplayCards, btnPlayCard;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_primary);
 
+        RelativeLayout mainLayout;
+        mainLayout = new RelativeLayout(this);
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
+        MASTER_HEIGHT = metrics.heightPixels;
+        MASTER_WIDTH = metrics.widthPixels;
+
+        System.out.println(MASTER_HEIGHT + " " + MASTER_WIDTH);
+
+
+
         btnDropCards = (Button) findViewById(R.id.btnDropCards);
         btnDisplayCards = (Button) findViewById(R.id.btnDisplayCards);
+        btnPlayCard = (Button) findViewById(R.id.btnPlayCard);
 
         //procedurally generate views later
         hand[0] = (TextView) findViewById(R.id.card1);
@@ -74,14 +92,32 @@ public class PrimaryActivity extends Activity {
         }
     }
 
+    public void playCard (View view) {
+        System.out.println(players[myPosition][selectedCard].toString());
+        //sendPlayToCast(players[myPosition][selectedCard]);
+
+        hand[selectedCard].setClickable(false);
+        resetCardPosition();
+        hand[selectedCard].setTextColor(Color.GRAY);
+
+        btnPlayCard.setClickable(false);
+        btnPlayCard.setTextColor(Color.GRAY);
+    }
+
     public void dropCard (View view) {
 
         replaceCard(selectedCard, myPosition);
+        //sendCribToCast(players[myPosition][selectedCard]);
 
         hand[selectedCard].setVisibility(View.INVISIBLE);
         btnDropCards.setVisibility(View.INVISIBLE);
 
         playActive = true;
+
+        btnPlayCard.setVisibility(View.VISIBLE);
+        //btnPlayCard.setClickable(false);
+        btnPlayCard.setTextColor(Color.GRAY);
+
     }
 
     public void replaceCard (int replacedCard, int playerPosition) {
@@ -104,7 +140,7 @@ public class PrimaryActivity extends Activity {
 
         System.out.println("");
         for (int i = 0; i < 4; i++)
-            System.out.print(players[playerPosition][i].toString() + ", ");
+            System.out.println(players[playerPosition][i].toString() + ", ");
     }
 
     public void displayHand (View view) {
@@ -117,6 +153,10 @@ public class PrimaryActivity extends Activity {
         }
 
         btnDisplayCards.setVisibility(View.INVISIBLE);
+
+        btnDropCards.setVisibility(View.VISIBLE);
+        btnDropCards.setClickable(false);
+        btnDropCards.setTextColor(Color.GRAY);
     }
 
     //cycle to selected card and mark as tagged to be played/dropped;
@@ -154,15 +194,30 @@ public class PrimaryActivity extends Activity {
             view.setLayoutParams(params);
 
             //drop button only needed prior to play; change from visibility to unclickable in future
-            if (!playActive)
-                btnDropCards.setVisibility(View.VISIBLE);
+            if (!playActive) {
+                //btnDropCards.setVisibility(View.VISIBLE);
+                btnDropCards.setTextColor(Color.BLACK);
+                btnDropCards.setClickable(true);
+            }
+            else {
+                //btnPlayCard.setVisibility(View.VISIBLE);
+                btnPlayCard.setTextColor(Color.BLACK);
+                btnPlayCard.setClickable(true);
+            }
         }
         else {
             //shift card back to standard position and hide drop button
             params.topMargin = 75;
             view.setLayoutParams(params);
 
-            btnDropCards.setVisibility(View.INVISIBLE);
+            btnDropCards.setTextColor(Color.GRAY);
+            btnDropCards.setClickable(false);
+
+            btnPlayCard.setTextColor(Color.GRAY);
+            btnPlayCard.setClickable(false);
+
+            //btnDropCards.setVisibility(View.INVISIBLE);
+            //btnPlayCard.setVisibility(View.INVISIBLE);
         }
 
     }
@@ -230,6 +285,10 @@ public class PrimaryActivity extends Activity {
     }
 
 
+
+    public void viewCreation(Bundle savedInstance)  {
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
