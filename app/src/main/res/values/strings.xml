@@ -4,5 +4,9 @@
     <string name="app_name">Cribbage for Chromecast</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="namespace">urn:x-cast:com.google.cast.sample.helloworld</string>
+    <string name="app_id">795B041A</string>
+    <string name="media_route_menu_title">Play on&#8230;</string>
+
 
 </resources>
