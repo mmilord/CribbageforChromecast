@@ -22,23 +22,27 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.*;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
+import android.widget.Toast;
+
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastMediaControlIntent;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class PrimaryActivity extends ActionBarActivity {
 
-    private static final String TAG = PrimaryActivity.class.getSimpleName();
-
-    int MASTER_HEIGHT, MASTER_WIDTH, PADDING_SIDE = 64, PADDING_TOP = 16, PADDING_BOT = 16, FOUR_CARD_SIZE, FIVE_CARD_SIZE, SIX_CARD_SIZE;
-
-    private static final int RESULT_SETTINGS = 1;
-
     DealerCardManagement cardManager;
     ChromecastManagement castManager;
+
+    private static final String TAG = PrimaryActivity.class.getSimpleName();
+    private static final int REQUEST_CODE = 1;
+    private static Context context;
+    private static final int RESULT_SETTINGS = 1;
+
+    int MASTER_HEIGHT, MASTER_WIDTH, PADDING_SIDE = 64, PADDING_TOP = 16, PADDING_BOT = 16, FOUR_CARD_SIZE, FIVE_CARD_SIZE, SIX_CARD_SIZE;
 
     //hard for now
     int myPosition = 1;
@@ -47,12 +51,7 @@ public class PrimaryActivity extends ActionBarActivity {
     int selectedCard;
 
     TextView[] hand = new TextView[handCount];
-
     Button btnDropCards, btnDisplayCards, btnPlayCard;
-
-    private static final int REQUEST_CODE = 1;
-
-    private static Context context;
 
 
     ///////////////////////////////////
@@ -117,12 +116,17 @@ public class PrimaryActivity extends ActionBarActivity {
         System.out.println(cardManager.getPlayersCardToString(myPosition, selectedCard));
         //sendPlayToCast(players[myPosition][selectedCard]);
 
-        hand[selectedCard].setClickable(false);
-        resetCardPosition();
-        hand[selectedCard].setTextColor(Color.GRAY);
+        if (cardManager.canAddToActiveCards(myPosition, selectedCard)) {
+            cardManager.doAddToActiveCards(myPosition, selectedCard);
+                hand[selectedCard].setClickable(false);
+                resetCardPosition();
+                hand[selectedCard].setTextColor(Color.GRAY);
 
-        btnPlayCard.setClickable(false);
-        btnPlayCard.setTextColor(Color.GRAY);
+                btnPlayCard.setClickable(false);
+                btnPlayCard.setTextColor(Color.GRAY);
+        }
+        else
+            Toast.makeText(context, "can not drop", Toast.LENGTH_LONG);
     }
 
     public void dropCard (View view) {
@@ -146,6 +150,11 @@ public class PrimaryActivity extends ActionBarActivity {
 
         boolean dropped = false;
 
+        cardManager.addToCrib(cardManager.getPlayersCardToString(myPosition, replacedCard));
+
+        cardManager.replaceCard(playerPosition, replacedCard);
+
+        /*
         if (selectedCard != handCount - 1)
             for (int i = 0; i < handCount; i++)
                 if (i == replacedCard && i + 1 < handCount) {
@@ -157,8 +166,7 @@ public class PrimaryActivity extends ActionBarActivity {
                 }
         else if (!dropped)
             cardManager.addToCrib(cardManager.players[playerPosition][handCount - 1]);
-
-        cardManager.players[playerPosition][handCount - 1] = null;
+        */
 
         System.out.println("");
         for (int i = 0; i < 4; i++)

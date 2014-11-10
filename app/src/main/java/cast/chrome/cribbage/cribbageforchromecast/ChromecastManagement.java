@@ -27,11 +27,10 @@ import java.io.IOException;
 public class ChromecastManagement {
 
     private static final String TAG = PrimaryActivity.class.getSimpleName();
+    private Context context;
 
     //Cast vars
     private MediaRouter mMediaRouter;
-
-
     private MediaRouteSelector mMediaRouteSelector;
     private MediaRouter.Callback mMediaRouterCallback;
     private CastDevice mSelectedDevice;
@@ -43,8 +42,6 @@ public class ChromecastManagement {
     private boolean mApplicationStarted;
     private boolean mWaitingForReconnect;
     private String mSessionId;
-
-    private Context context;
 
 
     public ChromecastManagement(Context c, Resources resources) {

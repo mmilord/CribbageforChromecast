@@ -15,23 +15,23 @@ public class Deck {
         Random generator = new Random();
         Card temp;
 
-        for (int a=0; a<=3; a++)
+        for (int a = 0; a <= 3; a++)
         {
-            for (int b=0; b<=12; b++)
+            for (int b = 0; b <= 12; b++)
             {
-                cards.add( new Card(a,b) );
+                cards.add(new Card(a, b));
             }
         }
 
 
         for (int i=0; i<100; i++)
         {
-            i1 = generator.nextInt( cards.size() - 1 );
-            i2 = generator.nextInt( cards.size() - 1 );
+            i1 = generator.nextInt(cards.size() - 1);
+            i2 = generator.nextInt(cards.size() - 1);
 
-            temp = (Card) cards.get( i2 );
-            cards.set( i2 , cards.get( i1 ) );
-            cards.set( i1, temp );
+            temp = (Card) cards.get(i2);
+            cards.set(i2, cards.get(i1));
+            cards.set(i1, temp);
         }
     }
 
