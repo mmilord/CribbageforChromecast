@@ -12,12 +12,16 @@ public class DealerCardManagement {
     String[][] players;
     String[] crib;
     Deck deck;
+    String drawCard;
 
     ArrayList<String> activeCards = new ArrayList<String>();
 
     Boolean playState;
 
-
+    /**
+     * Constructor for initial creation of game; creates deck object and deals hands;
+     * @param playerCount   amount of players in game
+     */
     public DealerCardManagement(int playerCount) {
         deck = new Deck();
         crib = new String[4];
@@ -31,10 +35,21 @@ public class DealerCardManagement {
         dealer();
     }
 
+    /**
+     * Constructor that is called when game is premade by another player in the game
+     * @param predealtPlayers   imported players from predealt from CastManager
+     * @param predealtCrib      imported crib from predealt from CastManager
+     */
+    public DealerCardManagement (String[][] predealtPlayers, String[] predealtCrib) {
+        players = predealtPlayers;
+        crib = predealtCrib;
+        playState = false;
+    }
 
-    ///////////////////////////////////
-    ///**     Setters/Getters     **///
-    ///////////////////////////////////
+
+    /**
+     * Setters and getters
+     */
     public void setPlayState(Boolean playState) { this.playState = playState; }
 
     public String[][] getPlayers() { return players; }
@@ -49,7 +64,10 @@ public class DealerCardManagement {
 
     public ArrayList<String> getActiveCards() { return activeCards; }
 
-
+    public int callPlayerHandScoreCheck(int playerPosition) {
+        players[playerPosition][4] = drawCard;
+        return Scoring.doHandScoreCheck(players[playerPosition]);
+    }
 
     public void addToCrib (String card) {
         ArrayList<String> temp = new ArrayList<String>(Arrays.asList(crib));
@@ -57,6 +75,10 @@ public class DealerCardManagement {
         crib = temp.toArray(new String[4]);
     }
 
+
+    /**
+     * Performs the deal action and setups up the game
+     */
     public void dealer() {
         System.out.println("Total: " + deck.getTotalCards());
 
@@ -76,9 +98,13 @@ public class DealerCardManagement {
         }
     }
 
+    /**
+     * Return whether or not card is allowed to be played
+     * @return true if playable, false otherwise
+     */
     public Boolean canAddToActiveCards(int playerPosition, int cardPosition) {
         if (!activeCards.isEmpty()) {
-            if (countActiveCards() + cardToInt(players[playerPosition][cardPosition].toString()) <= 31)
+            if (countActiveCards() + Scoring.cardToInt(players[playerPosition][cardPosition].toString()) <= 31)
                 return true;
             else
                 return false;
@@ -86,44 +112,53 @@ public class DealerCardManagement {
         else { return true; }
     }
 
+    /**
+     * Add card to activeCards variable
+     */
     public void doAddToActiveCards (int playerPosition, int cardPosition) {
         if (!activeCards.isEmpty()) {
             activeCards.add(players[playerPosition][cardPosition]);
         }
         else {
-            activeCards = new ArrayList<String>();
+            activeCards.clear();
             activeCards.add(players[playerPosition][cardPosition]);
         }
     }
 
+    /**
+     * Count the activeCards value
+     * @return count
+     */
     public int countActiveCards () {
         int count = 0;
 
-        for (int i = 0; i < activeCards.size(); i++) {
-            int cardToAdd = cardToInt(activeCards.get(0));
+        if (!activeCards.isEmpty()) {
+            for (int i = 0; i < activeCards.size(); i++) {
+                int cardToAdd = Scoring.cardToInt(activeCards.get(0));
 
-            if (count <= 20 && cardToAdd == 1)
-                count += cardToAdd + 10;
-            else
-                count += cardToAdd;
+                if (count <= 20 && cardToAdd == 1)
+                    count += cardToAdd + 10;
+                else
+                    count += cardToAdd;
+            }
         }
 
-        return 0;
+        return count;
     }
 
-    public int cardToInt(String card) {
-        if (card.contains(" "))
-            card = card.substring(0, card.indexOf(" "));
-
-        if (card.equals("King") || card.equals("Queen") || card.equals("Jack"))
-            return 10;
-        else if (card.equals("Ace"))
-            return 1;
-        else
-            return Integer.parseInt(card);
+    /**
+     * Obtain rank/value of requested card
+     * @return rank as string
+     */
+    public String getCardRankString(int playerPosition, int cardPosition) {
+        return players[playerPosition][cardPosition].toString().substring(0, players[playerPosition][cardPosition].toString().indexOf(" "));
     }
 
-
+    /**
+     * Remove selected card from players hand
+     * @param playerPosition
+     * @param replacedCard      card to be removed from hand
+     */
     public void replaceCard(int playerPosition, int replacedCard) {
         players[playerPosition][replacedCard] = null;
         //ArrayList<String> temp = new ArrayList<String>();
@@ -140,13 +175,15 @@ public class DealerCardManagement {
         //players[playerPosition] = temp.toArray(new String[temp.size()]);
     }
 
-
+    /**
+     * Compare card played with activeCards and check for pairs
+     * @return value based on pair count
+     */
     public int doPairCheck(int playerPosition, int cardPosition) {
-        String card = getCardRankString(playerPosition, cardPosition);
 
-        if (activeCards.get(activeCards.size() - 1).equals(card)) {
-            if (activeCards.get(activeCards.size() - 2).equals(card)) {
-                if (activeCards.get(activeCards.size() - 3).equals(card)) {
+        if (getPlayersCardToString(playerPosition, cardPosition).equals(activeCards.get(activeCards.size()))) {
+            if (getPlayersCardToString(playerPosition, cardPosition).equals(activeCards.get(activeCards.size() - 1))) {
+                if (getPlayersCardToString(playerPosition, cardPosition).equals(activeCards.get(activeCards.size() - 2))) {
                     return 4;
                 } else {
                     return 3;
@@ -156,37 +193,11 @@ public class DealerCardManagement {
                 return 2;
             }
         }
-        else { return 0; }
-    }
-
-    public int doRunCheck(int playerPosition, int cardPosition) {
-        int card = getCardRankInteger(getCardRankString(playerPosition, cardPosition));
-
-        // temps?
-        // idea: compare active to card then active-1 to active and card then active -2 to active-1/active/card, etc
-        // easier way?
-        if (getCardRankInteger(activeCards.get(activeCards.size() - 1)) == card - 1 || getCardRankInteger(activeCards.get(activeCards.size() - 1)) == card + 1) {
-
-        }
-
-        return 0;
-    }
-
-    public String getCardRankString(int playerPosition, int cardPosition) {
-        return players[playerPosition][cardPosition].toString().substring(0, players[playerPosition][cardPosition].toString().indexOf(" "));
-    }
-
-    public int getCardRankInteger(String card) {
-
-        if (card.equals("King"))
-            return 13;
-        else if (card.equals("Queen"))
-            return 12;
-        else if (card.equals("Jack"))
-            return 11;
-        else if (card.equals("Ace"))
-            return 1;
         else
-            return Integer.parseInt(card);
+            return 0;
     }
+
+
+
+
 }

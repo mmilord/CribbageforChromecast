@@ -21,12 +21,23 @@ import com.google.android.gms.common.api.Status;
 
 import java.io.IOException;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 /**
  * Created by milord on 08-Nov-14.
  */
 public class ChromecastManagement {
 
     private static final String TAG = PrimaryActivity.class.getSimpleName();
+
+    private static final String KEY_SEND_HANDS = "send_hands";
+    private static final String KEY_SEND_CARD_PLAYED = "send_card_played";
+    private static final String KEY_SEND_CARD_DROPPED = "send_card_dropped";
+    private static final String KEY_SEND_SCORES_DURING_PLAY = "send_scores_during_play";
+    private static final String KEY_SEND_SCORES_DURING_SHOW = "send_scores_during_show";
+
     private Context context;
 
     //Cast vars
@@ -62,9 +73,6 @@ public class ChromecastManagement {
         String downloadType = SP.getString("downloadType","1");
     }
 
-    ///////////////////////////////////
-    ///**     Setters/Getters     **///
-    ///////////////////////////////////
     public MediaRouteSelector getmMediaRouteSelector() { return mMediaRouteSelector; }
 
 
@@ -130,6 +138,56 @@ public class ChromecastManagement {
         }
     }
 
+
+    void sendHands(String[][] playersHands) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put(KEY_SEND_HANDS, playersHands);
+            sendMessage(payload.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "fail sending cards to cast", e);
+        }
+    }
+
+    void sendCardDropped(String card) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put(KEY_SEND_CARD_DROPPED, card);
+            sendMessage(payload.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "fail sending dropped card to cast", e);
+        }
+    }
+
+    void sendScoresDuringPlay(int score) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put(KEY_SEND_SCORES_DURING_PLAY, score);
+            sendMessage(payload.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "fail sending scores during play to cast", e);
+        }
+    }
+
+    void sendScoresDuringShow(int score) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put(KEY_SEND_SCORES_DURING_SHOW, score);
+            sendMessage(payload.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "fail sending scores during show to cast", e);
+        }
+    }
+
+    void sendCardPlayed(String card) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put(KEY_SEND_CARD_PLAYED, card);
+            sendMessage(payload.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "fail sending played card to cast", e);
+        }
+    }
 
     /**
      * Send a text message to the receiver

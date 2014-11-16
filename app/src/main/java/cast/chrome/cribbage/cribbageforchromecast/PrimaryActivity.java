@@ -54,9 +54,9 @@ public class PrimaryActivity extends ActionBarActivity {
     Button btnDropCards, btnDisplayCards, btnPlayCard;
 
 
-    ///////////////////////////////////
-    ///**     Setters/Getters     **///
-    ///////////////////////////////////
+    /**
+     * Setters and getters
+     */
     public String[][] getHands () { return cardManager.getPlayers(); }
 
     public String getPlayedCard (int playerPosition, int cardPosition) {
@@ -99,37 +99,57 @@ public class PrimaryActivity extends ActionBarActivity {
         hand[2] = (TextView) findViewById(R.id.card3);
         hand[3] = (TextView) findViewById(R.id.card4);
         hand[4] = (TextView) findViewById(R.id.card5);
-
     }
 
     public static Context getAppContext() {
         return PrimaryActivity.context;
     }
 
+    /**
+     * Redeal the hands and setup new game
+     * @param view
+     */
     public void newDeal (View view) {
         cardManager = new DealerCardManagement(3);
 
         btnDisplayCards.setVisibility(View.VISIBLE);
+        btnPlayCard.setVisibility(View.INVISIBLE);
+        btnDropCards.setVisibility(View.INVISIBLE);
+
+        //castManager.sendHands(cardManager.players);
+        castManager.sendScoresDuringPlay(18);
+
     }
 
+    /**
+     * Play currently selected card; remove from selectability and reset position
+     * @param view
+     */
     public void playCard (View view) {
         System.out.println(cardManager.getPlayersCardToString(myPosition, selectedCard));
         //sendPlayToCast(players[myPosition][selectedCard]);
 
         if (cardManager.canAddToActiveCards(myPosition, selectedCard)) {
             cardManager.doAddToActiveCards(myPosition, selectedCard);
-                hand[selectedCard].setClickable(false);
-                resetCardPosition();
-                hand[selectedCard].setTextColor(Color.GRAY);
+            hand[selectedCard].setClickable(false);
+            resetCardPosition();
+            hand[selectedCard].setTextColor(Color.GRAY);
 
-                btnPlayCard.setClickable(false);
-                btnPlayCard.setTextColor(Color.GRAY);
+            //btnPlayCard.setClickable(false);
+            //btnPlayCard.setTextColor(Color.GRAY);
+
+            castManager.sendCardPlayed(cardManager.getPlayersCardToString(myPosition, selectedCard));
         }
         else
             Toast.makeText(context, "can not drop", Toast.LENGTH_LONG);
     }
 
+    /**
+     * Drop card from players hand
+     * @param view
+     */
     public void dropCard (View view) {
+        castManager.sendCardDropped(cardManager.getPlayersCardToString(myPosition, selectedCard));
 
         replaceCard(selectedCard, myPosition);
         //sendCribToCast(players[myPosition][selectedCard]);
@@ -142,10 +162,15 @@ public class PrimaryActivity extends ActionBarActivity {
         btnPlayCard.setVisibility(View.VISIBLE);
 
         //btnPlayCard.setClickable(false);
-        btnPlayCard.setTextColor(Color.GRAY);
+        btnPlayCard.setTextColor(Color.WHITE);
 
     }
 
+    /**
+     * Remove requested card from players hand
+     * @param replacedCard
+     * @param playerPosition
+     */
     public void replaceCard (int replacedCard, int playerPosition) {
 
         boolean dropped = false;
@@ -173,6 +198,10 @@ public class PrimaryActivity extends ActionBarActivity {
             System.out.println(cardManager.getPlayersCardToString(myPosition, i) + ", ");
     }
 
+    /**
+     * Display players hand on screen
+     * @param view
+     */
     public void displayHand (View view) {
 
         resetCardPosition();
@@ -211,6 +240,10 @@ public class PrimaryActivity extends ActionBarActivity {
         }
     }
 
+    /**
+     * Switch card to selected state and attach to selectedCard var
+     * @param view
+     */
     public void selectCard (View view) {
 
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) view.getLayoutParams();
@@ -253,6 +286,9 @@ public class PrimaryActivity extends ActionBarActivity {
 
     }
 
+    /**
+     * reset all card positions back to unselected state
+     */
     public void resetCardPosition () {
 
         RelativeLayout.LayoutParams tempParams;
@@ -262,7 +298,6 @@ public class PrimaryActivity extends ActionBarActivity {
             hand[i].setLayoutParams(tempParams);
         }
     }
-
 
 
     public void viewCreation(Bundle savedInstance)  {
