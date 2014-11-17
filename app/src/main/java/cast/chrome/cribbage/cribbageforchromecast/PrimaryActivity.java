@@ -116,8 +116,8 @@ public class PrimaryActivity extends ActionBarActivity {
         btnPlayCard.setVisibility(View.INVISIBLE);
         btnDropCards.setVisibility(View.INVISIBLE);
 
-        //castManager.sendHands(cardManager.players);
-        castManager.sendScoresDuringPlay(18);
+        castManager.sendHands(cardManager.players);
+        //castManager.sendScoresDuringPlay(18);
 
     }
 
@@ -209,7 +209,7 @@ public class PrimaryActivity extends ActionBarActivity {
         for (int i = 0; i < handCount; i++) {
             hand[i].setText(cardManager.getPlayersCardToString(myPosition, i));
             hand[i].setVisibility(View.VISIBLE);
-            castManager.sendMessage("1 " + cardManager.getPlayersCardToString(myPosition, i));
+            //castManager.sendMessage("1 " + cardManager.getPlayersCardToString(myPosition, i));
         }
 
         btnDisplayCards.setVisibility(View.INVISIBLE);

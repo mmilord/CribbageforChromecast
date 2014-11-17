@@ -21,6 +21,7 @@ import com.google.android.gms.common.api.Status;
 
 import java.io.IOException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -142,11 +143,43 @@ public class ChromecastManagement {
     void sendHands(String[][] playersHands) {
         try {
             JSONObject payload = new JSONObject();
-            payload.put(KEY_SEND_HANDS, playersHands);
+            JSONArray jsonData = getJSONArrayForHands(playersHands);
+            payload.put(KEY_SEND_HANDS, jsonData);
             sendMessage(payload.toString());
         } catch (JSONException e) {
             Log.e(TAG, "fail sending cards to cast", e);
         }
+    }
+
+    JSONArray getJSONArrayForHands(String[][] playerHands) {
+        JSONArray jsonArray = new JSONArray();
+
+        for (String[] hands : playerHands)
+            jsonArray.put(getJSONArrayForHand(hands));
+
+        return jsonArray;
+    }
+
+    JSONArray getJSONArrayForHand(String[] playerHand) {
+        JSONArray jsonArray = new JSONArray();
+
+        for(String card : playerHand)
+            jsonArray.put(getJSONObjectForCard(card));
+
+        return jsonArray;
+    }
+
+    JSONObject getJSONObjectForCard(String card) {
+        JSONObject jsonObject = null;
+        try {
+            String[] parts = card.split(" of ");
+            jsonObject = new JSONObject();
+            jsonObject.put("Rank", Scoring.cardToInt(parts[0]));
+            jsonObject.put("Suit", parts[1]);
+        } catch (JSONException e) {
+            Log.e(TAG, "fail attaching card to jsonObject", e);
+        }
+        return jsonObject;
     }
 
     void sendCardDropped(String card) {
