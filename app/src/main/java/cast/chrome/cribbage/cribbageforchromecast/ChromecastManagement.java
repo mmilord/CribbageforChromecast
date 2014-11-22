@@ -20,6 +20,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,11 +34,28 @@ public class ChromecastManagement {
 
     private static final String TAG = PrimaryActivity.class.getSimpleName();
 
+    private static final String GAME_NAMESPACE = "cast.chrome.cribbage.cribbageforchromecast";
+
     private static final String KEY_SEND_HANDS = "send_hands";
+    private static final String KEY_SEND_CRIB = "send_crib";    //possibly remove and have cc sort out crib then distribute
     private static final String KEY_SEND_CARD_PLAYED = "send_card_played";
     private static final String KEY_SEND_CARD_DROPPED = "send_card_dropped";
     private static final String KEY_SEND_SCORES_DURING_PLAY = "send_scores_during_play";
     private static final String KEY_SEND_SCORES_DURING_SHOW = "send_scores_during_show";
+
+    private static final String KEY_EVENT = "event";
+
+    private static final String KEY_MY_POSITION = "my_position";
+    private static final String KEY_RECEIVE_HANDS = "receive_hands";
+    private static final String KEY_RECEIVE_CRIB = "receive_crib";
+    private static final String KEY_RECEIVE_CARD_PLAYED = "receive_card_played";
+    private static final String KEY_PLAYER_ONE_HAND = "player_one_hand";
+    private static final String KEY_PLAYER_TWO_HAND = "player_two_hand";
+    private static final String KEY_PLAYER_THREE_HAND = "player_three_hand";
+
+    private static final String KEY_PLAYER_ONE = "player_one";
+    private static final String KEY_PLAYER_TWO = "player_two";
+    private static final String KEY_PLAYER_THREE = "player_three";
 
     private Context context;
 
@@ -141,6 +159,8 @@ public class ChromecastManagement {
 
 
     void sendHands(String[][] playersHands) {
+        String[][] temp = new String[3][5];
+
         try {
             JSONObject payload = new JSONObject();
             JSONArray jsonData = getJSONArrayForHands(playersHands);
@@ -174,12 +194,23 @@ public class ChromecastManagement {
         try {
             String[] parts = card.split(" of ");
             jsonObject = new JSONObject();
-            jsonObject.put("Rank", Scoring.cardToInt(parts[0]));
+            jsonObject.put("Rank", Scoring.getCardRankInteger(parts[0]));
             jsonObject.put("Suit", parts[1]);
         } catch (JSONException e) {
             Log.e(TAG, "fail attaching card to jsonObject", e);
         }
         return jsonObject;
+    }
+
+    void sendCrib (String[] crib) {
+        try {
+            JSONObject payload = new JSONObject();
+            JSONArray jsonArray = getJSONArrayForHand(crib);
+            payload.put(KEY_SEND_CRIB, jsonArray);
+            sendMessage(payload.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "fail sending crib to cast", e);
+        }
     }
 
     void sendCardDropped(String card) {
@@ -416,4 +447,59 @@ public class ChromecastManagement {
         }
 
     }
+
+    public void onMessageReceived(JSONObject message) {
+        try {
+            Log.d(TAG, "onMessageReceieved: " + message);
+            if(message.has(KEY_EVENT)) {
+                String event = message.getString(KEY_EVENT);
+                if (KEY_MY_POSITION.equals(event)) {
+                    Log.d(TAG, "POSITION RECEIVEd");
+                    try {
+                        String playerPosition = message.getString(KEY_PLAYER_ONE);
+                        onPositionReceived(playerPosition);
+                    } catch (JSONException e) {
+                        Log.e(TAG, "fail grabbing player position from message data", e);
+                    }
+                }
+                else if (KEY_RECEIVE_HANDS.equals(event)) {
+                    Log.d(TAG, "HANDS RECEIVED");
+                    onHandsReceived(message);
+                }
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "fail recieveing message from cats", e);
+        }
+    }
+
+    public int onPositionReceived(String playerPosition) {
+        return Integer.parseInt(playerPosition);
+    }
+
+    public String[][] onHandsReceived(JSONObject rootObject) {
+        String[][] playerHandsTemp = new String[3][5];
+
+        try {
+            ArrayList<String> temp = new ArrayList<String>();
+            JSONArray tempHands = rootObject.getJSONArray("send_hands");
+
+            JSONArray cols = new JSONArray();
+
+            for (int i = 0; i < tempHands.length(); i++) {
+                JSONArray jsonArray = tempHands.getJSONArray(i);
+                System.out.println("jsonArray" + i + ": " + jsonArray);
+                for (int j = 0; j < jsonArray.length(); j++) {
+                    System.out.println(jsonArray.get(j).toString());
+                    JSONObject tempJSONObj = (JSONObject) jsonArray.get(j);
+                    playerHandsTemp[i][j] = tempJSONObj.get("Rank") + " of " + tempJSONObj.get("Suit");
+                }
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "fail test", e);
+        }
+
+        return playerHandsTemp;
+    }
+
+ 
 }

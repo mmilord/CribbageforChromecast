@@ -12,7 +12,7 @@ public class Scoring {
     /**
      * @return requested card as integer
      */
-    static int cardToInt(String card) {
+    static int cardToScoringValue(String card) {
         if (card.contains(" "))
             card = card.substring(0, card.indexOf(" "));
 
@@ -25,6 +25,8 @@ public class Scoring {
     }
 
     static int getCardRankInteger(String card) {
+        if (card.contains(" "))
+            card = card.substring(0, card.indexOf(" "));
 
         if (card.equals("King"))
             return 13;
@@ -49,7 +51,7 @@ public class Scoring {
         else
             return false;
     }
-/*
+    /*
     static int doRunCheck(int cardOne, int cardTwo) {
         // card = getCardRankInteger(getCardRankString(playerPosition, cardPosition));
 
@@ -69,30 +71,32 @@ public class Scoring {
      */
     static int doHandScoreCheck (String[] playerHand) {
 
-        // sortHand(); // make sure drawCard is properly sorted after adding to players array in DealerCardManagement
+        sorthand(playerHand);
+
+        int[] tempCardRanks = new int[5];
+
+        for (int i = 0; i < playerHand.length; i++)
+            tempCardRanks[i] = getCardRankInteger(playerHand[i]);
 
         int score = 0;
 
+        //Check for pairs
         for (int i = 0; i < playerHand.length - 1; i++)
             for (int j = i + 1; j < playerHand.length; j++)
                 if (doPairCheck(playerHand[i], playerHand[j]))
                     score++;
 
-        for (int i = 0; i < playerHand.length - 1; i++)
-            if (cardToInt(playerHand[i]) == cardToInt(playerHand[i + 1] + 1) && cardToInt(playerHand[i + 1]) + 1 != 14)
-                if (cardToInt(playerHand[i + 1]) == cardToInt(playerHand[i + 2] + 1) && cardToInt(playerHand[i + 2]) + 1 != 14)
-                    if (cardToInt(playerHand[i + 2]) == cardToInt(playerHand[i + 3] + 1) && cardToInt(playerHand[i + 3]) + 1 != 14) {
-                        if (cardToInt(playerHand[i + 3]) == cardToInt(playerHand[i + 4] + 1) && cardToInt(playerHand[i + 4]) + 1 != 14) {
-                            return score += 5;
-                        } else {
-                            return score += 4;
-                        }
-                    } else if (cardToInt(playerHand[i + 2]) == cardToInt(playerHand[i + 3]) && cardToInt(playerHand[i + 3]) == cardToInt(playerHand[i + 4] + 1)) {
-                        return score += 4;
-                    } else {
-                        return score += 3;
-                    }
 
+
+        int runCount = 0;
+        //alt run check
+        for (int i = 0; i < playerHand.length; i++) {
+            if (tempCardRanks[i] != tempCardRanks[i + 1]) {
+                if (tempCardRanks[i + 1] - tempCardRanks[i] <= 1) {
+                    runCount++;
+                }
+            }
+        }
 
         int count = 0;
         for (int i = 0; i < playerHand.length; i++)
@@ -107,5 +111,25 @@ public class Scoring {
             score += count;
 
                         return score;
+    }
+
+    static String[] sorthand (String[] playerHand) {
+
+        String temp;
+        boolean sorted = false;
+
+        while (!sorted) {
+            sorted = true;
+            for (int i = 0; i < playerHand.length - 1; i++) {
+                if (getCardRankInteger(playerHand[i]) > getCardRankInteger(playerHand[i + 1])) {
+                    temp = playerHand[i];
+                    playerHand[i] = playerHand[i + 1];
+                    playerHand[i + 1] = temp;
+                    sorted = false;
+                }
+            }
+        }
+
+        return playerHand;
     }
 }

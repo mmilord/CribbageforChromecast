@@ -20,16 +20,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.*;
-import android.support.v7.media.MediaRouteSelector;
-import android.support.v7.media.MediaRouter;
 import android.widget.Toast;
-
-import com.google.android.gms.cast.Cast;
-import com.google.android.gms.cast.CastMediaControlIntent;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 
 public class PrimaryActivity extends ActionBarActivity {
@@ -73,6 +64,8 @@ public class PrimaryActivity extends ActionBarActivity {
         PrimaryActivity.context = getApplicationContext();
 
         castManager = new ChromecastManagement(getAppContext(), getResources());
+
+
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setBackgroundDrawable(new ColorDrawable(
@@ -119,6 +112,9 @@ public class PrimaryActivity extends ActionBarActivity {
         castManager.sendHands(cardManager.players);
         //castManager.sendScoresDuringPlay(18);
 
+        cardManager.players[0] = Scoring.sorthand(cardManager.players[0]);
+        cardManager.players[1] = Scoring.sorthand(cardManager.players[1]);
+        cardManager.players[2] = Scoring.sorthand(cardManager.players[2]);
     }
 
     /**
@@ -390,7 +386,5 @@ public class PrimaryActivity extends ActionBarActivity {
     private void teardown() {
         castManager.teardown();
     }
-
-
 
 }
