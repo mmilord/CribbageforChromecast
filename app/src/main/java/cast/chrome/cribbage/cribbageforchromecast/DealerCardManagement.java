@@ -104,7 +104,7 @@ public class DealerCardManagement {
      */
     public Boolean canAddToActiveCards(int playerPosition, int cardPosition) {
         if (!activeCards.isEmpty()) {
-            if (countActiveCards() + Scoring.cardToInt(players[playerPosition][cardPosition].toString()) <= 31)
+            if (countActiveCards() + Scoring.cardToScoringValue(players[playerPosition][cardPosition].toString()) <= 31)
                 return true;
             else
                 return false;
@@ -134,7 +134,7 @@ public class DealerCardManagement {
 
         if (!activeCards.isEmpty()) {
             for (int i = 0; i < activeCards.size(); i++) {
-                int cardToAdd = Scoring.cardToInt(activeCards.get(0));
+                int cardToAdd = Scoring.cardToScoringValue(activeCards.get(0));
 
                 if (count <= 20 && cardToAdd == 1)
                     count += cardToAdd + 10;

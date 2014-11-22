@@ -161,6 +161,8 @@ public class ChromecastManagement implements Cast.MessageReceivedCallback {
 
 
     void sendHands(String[][] playersHands) {
+        String[][] temp = new String[3][5];
+
         try {
             JSONObject payload = new JSONObject();
             JSONArray jsonData = getJSONArrayForHands(playersHands);
@@ -194,12 +196,23 @@ public class ChromecastManagement implements Cast.MessageReceivedCallback {
         try {
             String[] parts = card.split(" of ");
             jsonObject = new JSONObject();
-            jsonObject.put("Rank", Scoring.cardToInt(parts[0]));
+            jsonObject.put("Rank", Scoring.getCardRankInteger(parts[0]));
             jsonObject.put("Suit", parts[1]);
         } catch (JSONException e) {
             Log.e(TAG, "fail attaching card to jsonObject", e);
         }
         return jsonObject;
+    }
+
+    void sendCrib (String[] crib) {
+        try {
+            JSONObject payload = new JSONObject();
+            JSONArray jsonArray = getJSONArrayForHand(crib);
+            payload.put(KEY_SEND_CRIB, jsonArray);
+            sendMessage(payload.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "fail sending crib to cast", e);
+        }
     }
 
     void sendCardDropped(String card) {
@@ -450,7 +463,6 @@ public class ChromecastManagement implements Cast.MessageReceivedCallback {
         Log.d(TAG, "onMessageReceived" + message);
         try {
             JSONObject jsonObject = new JSONObject(message);
-
             if(jsonObject.has(KEY_EVENT)) {
                 String event = jsonObject.getString(KEY_EVENT);
                 if (KEY_MY_POSITION.equals(event)) {
@@ -471,20 +483,15 @@ public class ChromecastManagement implements Cast.MessageReceivedCallback {
             Log.e(TAG, "fail recieveing message from cats", e);
         }
     }
-
     public int onPositionReceived(String playerPosition) {
         return Integer.parseInt(playerPosition);
     }
-
     public void onHandsReceived(JSONObject rootObject) {
         String[][] playerHandsTemp = new String[3][5];
-
         try {
             ArrayList<String> temp = new ArrayList<String>();
             JSONArray tempHands = rootObject.getJSONArray("send_hands");
-
             JSONArray cols = new JSONArray();
-
             for (int i = 0; i < tempHands.length(); i++) {
                 JSONArray jsonArray = tempHands.getJSONArray(i);
                 System.out.println("jsonArray" + i + ": " + jsonArray);
@@ -494,13 +501,10 @@ public class ChromecastManagement implements Cast.MessageReceivedCallback {
                     playerHandsTemp[i][j] = tempJSONObj.get("Rank") + " of " + tempJSONObj.get("Suit");
                 }
             }
-
             if (myTestListener != null)
                 myTestListener.receiveHands(playerHandsTemp);
-
         } catch (JSONException e) {
             Log.e(TAG, "fail test", e);
         }
-
     }
 }
