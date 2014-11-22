@@ -1,5 +1,6 @@
 package cast.chrome.cribbage.cribbageforchromecast;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 
-public class PrimaryActivity extends ActionBarActivity {
+public class PrimaryActivity extends ActionBarActivity implements ChromecastManagement.MyTestListener {
 
     DealerCardManagement cardManager;
     ChromecastManagement castManager;
@@ -179,20 +180,6 @@ public class PrimaryActivity extends ActionBarActivity {
 
         cardManager.replaceCard(playerPosition, replacedCard);
 
-        /*
-        if (selectedCard != handCount - 1)
-            for (int i = 0; i < handCount; i++)
-                if (i == replacedCard && i + 1 < handCount) {
-                    if (!dropped) {
-                        cardManager.addToCrib(cardManager.players[playerPosition][handCount - 1]);
-                        dropped = true;
-                    }
-                    cardManager.players[playerPosition][i] = cardManager.players[playerPosition][i + 1];
-                }
-        else if (!dropped)
-            cardManager.addToCrib(cardManager.players[playerPosition][handCount - 1]);
-        */
-
         System.out.println("");
         for (int i = 0; i < 4; i++)
             System.out.println(cardManager.getPlayersCardToString(myPosition, i) + ", ");
@@ -217,6 +204,8 @@ public class PrimaryActivity extends ActionBarActivity {
         btnDropCards.setVisibility(View.VISIBLE);
         btnDropCards.setClickable(false);
         btnDropCards.setTextColor(Color.GRAY);
+
+        Scoring.doHandScoreCheck(cardManager.players[1]);
     }
 
     //cycle to selected card and mark as tagged to be played/dropped;
@@ -365,7 +354,6 @@ public class PrimaryActivity extends ActionBarActivity {
                 break;
 
         }
-
     }
 
     private void displayUserSettings()
@@ -391,6 +379,8 @@ public class PrimaryActivity extends ActionBarActivity {
         castManager.teardown();
     }
 
-
-
+    public void receiveHands(String[][] playerHandsTemp) {
+        String[] cribTemp = {"hi", "hi", "hi"};
+        cardManager = new DealerCardManagement(playerHandsTemp, cribTemp);
+    }
 }

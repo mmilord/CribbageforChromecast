@@ -19,7 +19,10 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
+import junit.framework.TestListener;
+
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,15 +32,32 @@ import org.json.JSONTokener;
 /**
  * Created by milord on 08-Nov-14.
  */
-public class ChromecastManagement {
+public class ChromecastManagement implements Cast.MessageReceivedCallback {
 
     private static final String TAG = PrimaryActivity.class.getSimpleName();
 
+    private static final String GAME_NAMESPACE = "cast.chrome.cribbage.cribbageforchromecast";
+
     private static final String KEY_SEND_HANDS = "send_hands";
+    private static final String KEY_SEND_CRIB = "send_crib";    //possibly remove and have cc sort out crib then distribute
     private static final String KEY_SEND_CARD_PLAYED = "send_card_played";
     private static final String KEY_SEND_CARD_DROPPED = "send_card_dropped";
     private static final String KEY_SEND_SCORES_DURING_PLAY = "send_scores_during_play";
     private static final String KEY_SEND_SCORES_DURING_SHOW = "send_scores_during_show";
+
+    private static final String KEY_EVENT = "event";
+
+    private static final String KEY_MY_POSITION = "my_position";
+    private static final String KEY_RECEIVE_HANDS = "receive_hands";
+    private static final String KEY_RECEIVE_CRIB = "receive_crib";
+    private static final String KEY_RECEIVE_CARD_PLAYED = "receive_card_played";
+    private static final String KEY_PLAYER_ONE_HAND = "player_one_hand";
+    private static final String KEY_PLAYER_TWO_HAND = "player_two_hand";
+    private static final String KEY_PLAYER_THREE_HAND = "player_three_hand";
+
+    private static final String KEY_PLAYER_ONE = "player_one";
+    private static final String KEY_PLAYER_TWO = "player_two";
+    private static final String KEY_PLAYER_THREE = "player_three";
 
     private Context context;
 
@@ -397,7 +417,7 @@ public class ChromecastManagement {
     /**
      * Custom message channel
      */
-    private class HelloWorldChannel implements Cast.MessageReceivedCallback {
+    public class HelloWorldChannel implements Cast.MessageReceivedCallback {
 
         /**
          * @return custom namespace
@@ -413,6 +433,73 @@ public class ChromecastManagement {
         public void onMessageReceived(CastDevice castDevice, String namespace,
                                       String message) {
             Log.d(TAG, "onMessageReceived: " + message);
+        }
+
+    }
+
+    private MyTestListener myTestListener;
+
+    public interface MyTestListener {
+        public void receiveHands(String[][] hands);
+    }
+
+
+
+    @Override
+    public void onMessageReceived(CastDevice caseDevice, String nameSpace, String message) {
+        Log.d(TAG, "onMessageReceived" + message);
+        try {
+            JSONObject jsonObject = new JSONObject(message);
+
+            if(jsonObject.has(KEY_EVENT)) {
+                String event = jsonObject.getString(KEY_EVENT);
+                if (KEY_MY_POSITION.equals(event)) {
+                    Log.d(TAG, "POSITION RECEIVEd");
+                    try {
+                        String playerPosition = jsonObject.getString(KEY_PLAYER_ONE);
+                        onPositionReceived(playerPosition);
+                    } catch (JSONException e) {
+                        Log.e(TAG, "fail grabbing player position from message data", e);
+                    }
+                }
+                else if (KEY_RECEIVE_HANDS.equals(event)) {
+                    Log.d(TAG, "HANDS RECEIVED");
+                    onHandsReceived(jsonObject);
+                }
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "fail recieveing message from cats", e);
+        }
+    }
+
+    public int onPositionReceived(String playerPosition) {
+        return Integer.parseInt(playerPosition);
+    }
+
+    public void onHandsReceived(JSONObject rootObject) {
+        String[][] playerHandsTemp = new String[3][5];
+
+        try {
+            ArrayList<String> temp = new ArrayList<String>();
+            JSONArray tempHands = rootObject.getJSONArray("send_hands");
+
+            JSONArray cols = new JSONArray();
+
+            for (int i = 0; i < tempHands.length(); i++) {
+                JSONArray jsonArray = tempHands.getJSONArray(i);
+                System.out.println("jsonArray" + i + ": " + jsonArray);
+                for (int j = 0; j < jsonArray.length(); j++) {
+                    System.out.println(jsonArray.get(j).toString());
+                    JSONObject tempJSONObj = (JSONObject) jsonArray.get(j);
+                    playerHandsTemp[i][j] = tempJSONObj.get("Rank") + " of " + tempJSONObj.get("Suit");
+                }
+            }
+
+            if (myTestListener != null)
+                myTestListener.receiveHands(playerHandsTemp);
+
+        } catch (JSONException e) {
+            Log.e(TAG, "fail test", e);
         }
 
     }
