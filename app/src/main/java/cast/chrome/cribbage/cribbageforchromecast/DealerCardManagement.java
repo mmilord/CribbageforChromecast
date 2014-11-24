@@ -13,6 +13,8 @@ public class DealerCardManagement {
     String[] crib;
     Deck deck;
     String drawCard;
+    String cutCard;
+    int currentScore;
 
     ArrayList<String> activeCards = new ArrayList<String>();
 
@@ -26,6 +28,7 @@ public class DealerCardManagement {
         deck = new Deck();
         crib = new String[4];
         playState = false;
+        currentScore = 0;
 
         if (playerCount == 2)
             players = new String[playerCount][6];
@@ -33,16 +36,22 @@ public class DealerCardManagement {
             players = new String[playerCount][5];
 
         dealer();
+
+
+        players[0] = Scoring.sorthand(players[0]);
+        players[1] = Scoring.sorthand(players[1]);
+        players[2] = Scoring.sorthand(players[2]);
     }
 
     /**
      * Constructor that is called when game is premade by another player in the game
      * @param predealtPlayers   imported players from predealt from CastManager
-     * @param predealtCrib      imported crib from predealt from CastManager
+     * @param cribCard          imported crib card from predealt from CastManager
      */
-    public DealerCardManagement (String[][] predealtPlayers, String[] predealtCrib) {
+    public DealerCardManagement (String[][] predealtPlayers, String cribCard) {
         players = predealtPlayers;
-        crib = predealtCrib;
+        crib = new String[4];
+        crib[0] = cribCard;
         playState = false;
     }
 
@@ -57,6 +66,10 @@ public class DealerCardManagement {
     public String[] getCrib() { return crib; }
 
     public Boolean getPlayState() { return playState; }
+
+    public String getCutCard() { return cutCard; }
+
+    public int getCurrentScore() { return currentScore; }
 
     public String getPlayersCardToString(int playerPosition, int cardPosition) {
         return players[playerPosition][cardPosition].toString();
@@ -96,6 +109,11 @@ public class DealerCardManagement {
                 System.out.print(players[j][i].toString() + ", ");
             System.out.println();
         }
+
+        crib[0] = deck.drawFromDeck() + "";
+
+
+        cutCard = deck.drawFromDeck() + "";
     }
 
     /**
@@ -123,6 +141,8 @@ public class DealerCardManagement {
             activeCards.clear();
             activeCards.add(players[playerPosition][cardPosition]);
         }
+
+        currentScore += Scoring.cardToScoringValue(players[playerPosition][cardPosition]);
     }
 
     /**
@@ -196,8 +216,5 @@ public class DealerCardManagement {
         else
             return 0;
     }
-
-
-
 
 }

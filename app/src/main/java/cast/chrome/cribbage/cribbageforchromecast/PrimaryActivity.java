@@ -1,6 +1,5 @@
 package cast.chrome.cribbage.cribbageforchromecast;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,7 +9,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,6 +40,8 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
     int selectedCard;
 
+    int couldNotPlayCount = 0;
+
     TextView[] hand = new TextView[handCount];
     Button btnDropCards, btnDisplayCards, btnPlayCard;
 
@@ -66,6 +66,8 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
         castManager = new ChromecastManagement(getAppContext(), getResources());
 
+        //Attach listener for interface
+        castManager.setMyTestListener(this);
 
 
         ActionBar actionBar = getSupportActionBar();
@@ -106,16 +108,20 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
     public void newDeal (View view) {
         cardManager = new DealerCardManagement(3);
 
+        for (int i = 0; i < 5; i++) {
+            resetFullLayout();
+            hand[i].setVisibility(View.INVISIBLE);
+        }
+
         btnDisplayCards.setVisibility(View.VISIBLE);
         btnPlayCard.setVisibility(View.INVISIBLE);
         btnDropCards.setVisibility(View.INVISIBLE);
 
-        castManager.sendHands(cardManager.players);
-        //castManager.sendScoresDuringPlay(18);
+        castManager.joinGame("bob");
 
-        cardManager.players[0] = Scoring.sorthand(cardManager.players[0]);
-        cardManager.players[1] = Scoring.sorthand(cardManager.players[1]);
-        cardManager.players[2] = Scoring.sorthand(cardManager.players[2]);
+        castManager.sendHands(cardManager.players);
+        castManager.sendCrib(cardManager.getCrib());
+        castManager.sendCutCard(cardManager.getCutCard());
     }
 
     /**
@@ -124,18 +130,22 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
      */
     public void playCard (View view) {
         System.out.println(cardManager.getPlayersCardToString(myPosition, selectedCard));
-        //sendPlayToCast(players[myPosition][selectedCard]);
 
         if (cardManager.canAddToActiveCards(myPosition, selectedCard)) {
             cardManager.doAddToActiveCards(myPosition, selectedCard);
             hand[selectedCard].setClickable(false);
             resetCardPosition();
             hand[selectedCard].setTextColor(Color.GRAY);
+            hand[selectedCard].setSelected(true);
 
-            //btnPlayCard.setClickable(false);
-            //btnPlayCard.setTextColor(Color.GRAY);
+            btnPlayCard.setClickable(false);
+            btnPlayCard.setTextColor(Color.GRAY);
 
-            castManager.sendCardPlayed(cardManager.getPlayersCardToString(myPosition, selectedCard));
+            castManager.sendPlayerPositionAndCardPositionToCast(myPosition, selectedCard, "send_card_played");
+
+            castManager.sendIntToCast(cardManager.getCurrentScore(), "send_scores_during_play");
+
+            lockCards();
         }
         else
             Toast.makeText(context, "can not drop", Toast.LENGTH_LONG);
@@ -146,7 +156,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
      * @param view
      */
     public void dropCard (View view) {
-        castManager.sendCardDropped(cardManager.getPlayersCardToString(myPosition, selectedCard));
+        castManager.sendPlayerPositionAndCardPositionToCast(myPosition, selectedCard, "send_card_dropped");
 
         replaceCard(selectedCard, myPosition);
         //sendCribToCast(players[myPosition][selectedCard]);
@@ -181,6 +191,13 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
             System.out.println(cardManager.getPlayersCardToString(myPosition, i) + ", ");
     }
 
+
+    public void lockCards () {
+        for (int i = 0; i < 4; i++)
+            hand[i].setClickable(false);
+    }
+
+
     /**
      * Display players hand on screen
      * @param view
@@ -192,7 +209,6 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         for (int i = 0; i < handCount; i++) {
             hand[i].setText(cardManager.getPlayersCardToString(myPosition, i));
             hand[i].setVisibility(View.VISIBLE);
-            //castManager.sendMessage("1 " + cardManager.getPlayersCardToString(myPosition, i));
         }
 
         btnDisplayCards.setVisibility(View.INVISIBLE);
@@ -201,7 +217,39 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         btnDropCards.setClickable(false);
         btnDropCards.setTextColor(Color.GRAY);
 
-        Scoring.doHandScoreCheck(cardManager.players[1]);
+        //Scoring.doHandScoreCheck(cardManager.players[1]);
+    }
+
+    /**
+     * Establish players turn, if
+     */
+    public void myTurn() {
+        boolean canPlay = false;
+
+        for (int i = 0; i < 4; i++) {
+            if (cardManager.canAddToActiveCards(myPosition, i)) {
+                if (!hand[i].isSelected()) {
+                    hand[i].setClickable(true);
+                    hand[i].setTextColor(Color.RED);
+                    canPlay = true;
+                }
+            } else {
+                hand[i].setClickable(false);
+                hand[i].setTextColor(Color.GRAY);
+            }
+        }
+
+        if (couldNotPlayCount == 3) {
+            //reset activecards and playscore
+        } else if (canPlay) {
+            btnPlayCard.setClickable(true);
+            btnPlayCard.setTextColor(Color.BLACK);
+            couldNotPlayCount = 0;
+        } else {
+            btnPlayCard.setClickable(false);
+            btnPlayCard.setTextColor(Color.GRAY);
+            castManager.sendNextPlayerTurn(couldNotPlayCount++);
+        }
     }
 
     //cycle to selected card and mark as tagged to be played/dropped;
@@ -284,6 +332,14 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         }
     }
 
+    public void resetFullLayout() {
+        for (int i = 0; i < 5; i++) {
+            hand[i].setSelected(false);
+            hand[i].setTextColor(Color.RED);
+            hand[i].setClickable(true);
+        }
+    }
+
 
     public void viewCreation(Bundle savedInstance)  {
 
@@ -348,7 +404,6 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         switch (requestCode) {
             case RESULT_SETTINGS:
                 break;
-
         }
     }
 
@@ -375,8 +430,36 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         castManager.teardown();
     }
 
-    public void receiveHands(String[][] playerHandsTemp) {
-        String[] cribTemp = {"hi", "hi", "hi"};
-        cardManager = new DealerCardManagement(playerHandsTemp, cribTemp);
+
+    /**
+     * Initiates new game based on hands received
+     * @param playerHandsTemp
+     */
+    public void receiveHands(String[][] playerHandsTemp, String cribCard) {
+        cardManager = new DealerCardManagement(playerHandsTemp, cribCard);
+    }
+
+    public void receiveCardPlayed(int playerPosition, int cardPosition) {
+        cardManager.doAddToActiveCards(playerPosition, cardPosition);
+
+        myTurn();
+    }
+
+    public void receiveCribCard(int playerPosition, int cardPlayed) {
+        cardManager.addToCrib(cardManager.players[playerPosition][cardPlayed]);
+    }
+
+    public void receievePlayerPosition (int playerPosition) {
+        myPosition = playerPosition;
+    }
+
+    public void receiveCutCard (String cutCard) {
+        cardManager.cutCard = cutCard;
+    }
+
+    public void receieveNextTurn(int couldNotPlayCount) {
+        this.couldNotPlayCount = couldNotPlayCount;
+
+        myTurn();
     }
 }

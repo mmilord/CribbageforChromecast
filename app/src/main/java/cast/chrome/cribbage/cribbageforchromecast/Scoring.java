@@ -63,25 +63,47 @@ return 0;
      * @return score of players hand
      */
     static int doHandScoreCheck (String[] playerHand) {
-        sorthand(playerHand);
+
+        //sorthand(playerHand);
+
         int[] tempCardRanks = new int[5];
+
         for (int i = 0; i < playerHand.length; i++)
             tempCardRanks[i] = getCardRankInteger(playerHand[i]);
+
         int score = 0;
-//Check for pairs
+
+        //Check for pairs
         for (int i = 0; i < playerHand.length - 1; i++)
             for (int j = i + 1; j < playerHand.length; j++)
                 if (doPairCheck(playerHand[i], playerHand[j]))
                     score++;
-        int runCount = 0;
-//alt run check
-        for (int i = 0; i < playerHand.length; i++) {
-            if (tempCardRanks[i] != tempCardRanks[i + 1]) {
-                if (tempCardRanks[i + 1] - tempCardRanks[i] <= 1) {
-                    runCount++;
-                }
+
+
+
+        //alt run check
+        int trueRun = 0;
+        int possRun = 1;
+        int pairCounter = 0;
+        int multiRun = 1;
+        for (int i = 0; i < tempCardRanks.length - 1; i++) {
+            if (tempCardRanks[i] - tempCardRanks[i + 1] == 0) {
+                pairCounter++;
+                if (possRun > 1 || i == 0 || (i == 1 & multiRun == 1) || (i == 2 & multiRun == 2))
+                    multiRun++;
+            } else if (tempCardRanks[i + 1] - tempCardRanks[i] == 1) {
+                possRun++;
+                if (possRun >= 3)
+                    trueRun = possRun;
+            } else {
+                possRun = 1;
             }
         }
+        //errors with multiRun {2,2,5,6,7} fails; with multiRun=0 in else then {2,3,3,4,8} fails
+        score += (trueRun * multiRun);
+        score += pairCounter * 2;
+
+
         int count = 0;
         for (int i = 0; i < playerHand.length; i++)
             if (playerHand[i] + 1 == playerHand[i + 1])
@@ -90,10 +112,13 @@ return 0;
                 count = count;
             else
                 break;
+
         if (count == 3 || count == 4 || count == 5)
             score += count;
+
         return score;
     }
+
     static String[] sorthand (String[] playerHand) {
         String temp;
         boolean sorted = false;
