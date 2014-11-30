@@ -1,4 +1,4 @@
-package cast.chrome.cribbage.cribbageforchromecast;
+package cast.chrome.cribbage.cribbageforchromecast.Utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -19,56 +19,52 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
-import junit.framework.TestListener;
-
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
+
+import cast.chrome.cribbage.cribbageforchromecast.Interfaces.CastGameInterface;
+import cast.chrome.cribbage.cribbageforchromecast.Interfaces.CastReceiver;
+import cast.chrome.cribbage.cribbageforchromecast.PrimaryActivity;
+import cast.chrome.cribbage.cribbageforchromecast.R;
+import cast.chrome.cribbage.cribbageforchromecast.Utils.Scoring;
 
 /**
  * Created by milord on 08-Nov-14.
  */
-public class ChromecastManagement {
+public class ChromecastManagement extends MediaRouter.Callback implements GoogleApiClient.ConnectionCallbacks, Cast.MessageReceivedCallback {
 
     private static final String TAG = PrimaryActivity.class.getSimpleName();
 
     private static final String GAME_NAMESPACE = "cast.chrome.cribbage.cribbageforchromecast";
     private static final String KEY_COMMAND = "command";
-
-    private static final String KEY_SEND_HANDS = "send_hands";
-    private static final String KEY_SEND_CRIB = "send_crib";    //possibly remove and have cc sort out crib then distribute
-    private static final String KEY_SEND_CARD_PLAYED = "send_card_played";
-    private static final String KEY_SEND_CARD_DROPPED = "send_card_dropped";
-    private static final String KEY_SEND_SCORES_DURING_PLAY = "send_scores_during_play";
-    private static final String KEY_SEND_SCORES_DURING_SHOW = "send_scores_during_show";
-    private static final String KEY_SEND_CUT_CARD = "send_cut_card";
-    private static final String KEY_NEXT_PLAYER_TURN = "send_next_player_turn";
-    private static final String KEY_JOIN = "join";
     private static final String KEY_EVENT = "event";
+
+    private static final String KEY_HANDS = "hands";
+    private static final String KEY_CRIB = "crib";
+    private static final String KEY_CARD_PLAYED = "card_played";
+    private static final String KEY_CARD_DROPPED = "card_dropped";
+    private static final String KEY_CUT_CARD = "cut_card";
+    private static final String KEY_SCORES_DURING_PLAY = "scores_during_play";
+    private static final String KEY_SCORES_DURING_SHOW = "scores_during_show";
+    private static final String KEY_PEG_POINTS = "peg_points";
+    private static final String KEY_PREP_NEW_PLAY = "prep_new_play";
+
+
+    private static final String KEY_NEXT_PLAYER_TURN = "next_player_turn";
+    private static final String KEY_JOIN = "join";
     private static final String KEY_NAME = "name";
 
     private static final String KEY_MY_POSITION = "my_position";
-    private static final String KEY_RECEIVE_HANDS = "send_hands";
-    private static final String KEY_RECEIVE_CRIB = "receive_crib";
-    private static final String KEY_RECEIVE_CARD_PLAYED = "receive_card_played";
-    private static final String KEY_RECEIVE_CUT_CARD = "receive_cut_card";
-    private static final String KEY_PLAYER_ONE_HAND = "player_one_hand";
-    private static final String KEY_PLAYER_TWO_HAND = "player_two_hand";
-    private static final String KEY_PLAYER_THREE_HAND = "player_three_hand";
-
-    private static final String KEY_PLAYER_ONE = "player_one";
-    private static final String KEY_PLAYER_TWO = "player_two";
-    private static final String KEY_PLAYER_THREE = "player_three";
 
     private static final String KEY_COULD_NOT_PLAY = "could_not_play";
 
     private Context context;
 
-    //Cast vars
+    private CastReceiver castReceiver;
+
     private MediaRouter mMediaRouter;
     private MediaRouteSelector mMediaRouteSelector;
     private MediaRouter.Callback mMediaRouterCallback;
@@ -83,22 +79,22 @@ public class ChromecastManagement {
     private String mSessionId;
 
 
-    public ChromecastManagement(Context c, Resources resources) {
+    public ChromecastManagement(Context c, String appID, String tag, CastReceiver castReceiver) {
         context = c;
+        this.castReceiver = castReceiver;
 
         // Configure Cast device discovery
         mMediaRouter = MediaRouter.getInstance(context);
         mMediaRouteSelector = new MediaRouteSelector.Builder()
                 .addControlCategory(
-                        CastMediaControlIntent.categoryForCast(resources
-                                .getString(R.string.app_id))).build();
+                        CastMediaControlIntent.categoryForCast(appID)).build();
         mMediaRouterCallback = new MyMediaRouterCallback();
 
-        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(context);
+        /*SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(context);
 
         String strUserName = SP.getString("username", "NA");
         boolean bAppUpdates = SP.getBoolean("applicationUpdates",false);
-        String downloadType = SP.getString("downloadType","1");
+        String downloadType = SP.getString("downloadType","1");*/
     }
 
     public MediaRouteSelector getmMediaRouteSelector() { return mMediaRouteSelector; }
@@ -167,14 +163,14 @@ public class ChromecastManagement {
     }
 
 
-    void sendHands(String[][] playersHands) {
+    public void sendHands(String[][] playersHands) {
         String[][] temp = new String[3][5];
 
         try {
             JSONObject payload = new JSONObject();
             JSONArray jsonData = getJSONArrayForHands(playersHands);
-            payload.put(KEY_COMMAND, KEY_SEND_HANDS);
-            payload.put("hands", jsonData);
+            payload.put(KEY_COMMAND, KEY_HANDS);
+            payload.put(KEY_HANDS, jsonData);
             sendMessage(payload.toString());
         } catch (JSONException e) {
             Log.e(TAG, "fail sending cards to cast", e);
@@ -204,15 +200,15 @@ public class ChromecastManagement {
         try {
             String[] parts = card.split(" of ");
             jsonObject = new JSONObject();
-            jsonObject.put("Rank", Scoring.getCardRankInteger(parts[0]));
-            jsonObject.put("Suit", parts[1]);
+            jsonObject.put("rank", Scoring.getCardRankInteger(parts[0]));
+            jsonObject.put("suit", parts[1]);
         } catch (JSONException e) {
             Log.e(TAG, "fail attaching card to jsonObject", e);
         }
         return jsonObject;
     }
 
-    void sendCrib (String[] crib) {
+    public void sendCrib (String[] crib) {
         try {
             JSONObject payload = new JSONObject();
             JSONArray jsonArray = new JSONArray();
@@ -221,15 +217,15 @@ public class ChromecastManagement {
                 if (card != null)
                     jsonArray.put(getJSONObjectForCard(card));
 
-            payload.put(KEY_COMMAND, KEY_SEND_CRIB);
-            payload.put("crib", jsonArray);
+            payload.put(KEY_COMMAND, KEY_CRIB);
+            payload.put(KEY_CRIB, jsonArray);
             sendMessage(payload.toString());
         } catch (JSONException e) {
             Log.e(TAG, "fail sending crib to cast", e);
         }
     }
 
-    void sendIntToCast (int intToSend, String keyCommand) {
+    public void sendIntToCast (int intToSend, String keyCommand) {
         try {
             JSONObject payload = new JSONObject();
             payload.put(KEY_COMMAND, keyCommand);
@@ -240,7 +236,7 @@ public class ChromecastManagement {
         }
     }
 
-    void sendPlayerPositionAndCardPositionToCast (int playerPosition, int cardPosition, String keyCommand) {
+    public void sendPlayerPositionAndCardPositionToCast (int playerPosition, int cardPosition, String keyCommand) {
         try {
             JSONObject payload = new JSONObject();
             JSONObject jsonObject = new JSONObject();
@@ -254,7 +250,7 @@ public class ChromecastManagement {
         }
     }
 
-    void sendNextPlayerTurn(int couldNotPlay) {
+    public void sendNextPlayerTurn(int couldNotPlay) {
         try {
             JSONObject payload = new JSONObject();
             payload.put(KEY_COMMAND, KEY_NEXT_PLAYER_TURN);
@@ -265,18 +261,51 @@ public class ChromecastManagement {
         }
     }
 
-    void sendCutCard (String card) {
+    public void sendCutCard (String card) {
+
         try {
             JSONObject payload = new JSONObject();
-            payload.put(KEY_COMMAND, KEY_SEND_CUT_CARD);
-            payload.put("cut_card", card);
+            payload.put(KEY_COMMAND, KEY_CUT_CARD);
+            payload.put(KEY_CUT_CARD, getJSONObjectForCard(card));
             sendMessage(payload.toString());
         } catch (JSONException e) {
             Log.e(TAG, "fail sending dropped card to cast", e);
         }
     }
 
-    void joinGame(String name) {
+    public void sendCardPlayed (String card) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put(KEY_COMMAND, KEY_CARD_PLAYED);
+            payload.put(KEY_CARD_PLAYED, getJSONObjectForCard(card));
+            sendMessage(payload.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "fail sending dropped card to cast", e);
+        }
+    }
+
+    public void sendPrepNewPlay() {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put(KEY_COMMAND, KEY_PREP_NEW_PLAY);
+            sendMessage(payload.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "fail prep new play", e);
+        }
+    }
+
+    public void sendPegPoints(int pegPoints) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put(KEY_COMMAND, KEY_PEG_POINTS);
+            payload.put(KEY_PEG_POINTS, pegPoints);
+            sendMessage(payload.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "fail send peg points");
+        }
+    }
+
+     public  void joinGame(String name) {
         try {
             Log.d(TAG, "join: " + name);
             JSONObject payload = new JSONObject();
@@ -293,7 +322,7 @@ public class ChromecastManagement {
      *
      * @param message
      */
-    void sendMessage(String message) {
+    public void sendMessage(String message) {
         if (mApiClient != null && mChromecastManagementChannel != null) {
             try {
                 Cast.CastApi.sendMessage(mApiClient,
@@ -422,6 +451,81 @@ public class ChromecastManagement {
         }
     }
 
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        Log.d(TAG, "onConnected");
+
+        if (mApiClient == null) {
+            // We got disconnected while this runnable was pending
+            // execution.
+            return;
+        }
+
+        try {
+            if (mWaitingForReconnect) {
+                mWaitingForReconnect = false;
+
+                // Check if the receiver app is still running
+                if ((connectionHint != null) && connectionHint.getBoolean(Cast.EXTRA_APP_NO_LONGER_RUNNING)) {
+                    teardown();
+                } else {
+                    // Re-create the custom message channel
+                    try {
+                        Cast.CastApi.setMessageReceivedCallbacks(mApiClient, getNamespace(), this);
+                    } catch (IOException e) {
+                        Log.e(TAG, "Exception while creating channel", e);
+                    }
+                }
+            } else {
+                // Launch the receiver app
+                Cast.CastApi.launchApplication(mApiClient, context.getString(R.string.app_id), false)
+                        .setResultCallback(
+                                new ResultCallback<Cast.ApplicationConnectionResult>() {
+                                    @Override
+                                    public void onResult(Cast.ApplicationConnectionResult result) {
+                                        onConnectedResult(result);
+                                    }
+                                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to launch application", e);
+        }
+    }
+
+    public void onConnectedResult(Cast.ApplicationConnectionResult result){
+        Log.d(TAG, "ApplicationConnectionResultCallback.onResult: statusCode" + result.getStatus().getStatusCode());
+
+        if (result.getStatus().isSuccess()) {
+
+            Log.d(TAG, "application name: " + result.getApplicationMetadata().getName()
+                    + ", status: " + result.getApplicationStatus()
+                    + ", sessionId: " + result.getSessionId()
+                    + ", wasLaunched: " + result.getWasLaunched());
+
+            mApplicationStarted = true;
+
+            // Create the custom message
+            try {
+                Cast.CastApi.setMessageReceivedCallbacks(mApiClient, this.getNamespace(), this);
+            } catch (IOException e) {
+                Log.e(TAG, "Exception while creating channel", e);
+            }
+
+            // set the initial instructions
+            // on the receiver
+            sendMessage("hi");
+        } else {
+            Log.e(TAG, "application could not launch");
+            teardown();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int cause) {
+        Log.d(TAG, "onConnectionSuspended");
+        mWaitingForReconnect = true;
+    }
+
 
     private class ConnectionFailedListener implements
             GoogleApiClient.OnConnectionFailedListener {
@@ -433,7 +537,11 @@ public class ChromecastManagement {
         }
     }
 
-    void teardown() {
+    public String getNamespace() {
+        return context.getString(R.string.namespace);
+    }
+
+    public void teardown() {
         Log.d(TAG, "teardown");
         if (mApiClient != null) {
             if (mApplicationStarted) {
@@ -482,26 +590,40 @@ public class ChromecastManagement {
                 try {
                     JSONObject jsonObject = new JSONObject(message);
 
-                    if (jsonObject.has(KEY_MY_POSITION)) {
+                    String keyCommand = jsonObject.getString(KEY_COMMAND);
+
+                    if (keyCommand.equals(KEY_MY_POSITION)) {
                         Log.d(TAG, "POSITION RECEIVEd");
                         onPositionReceived(jsonObject);
-                    } else if (jsonObject.has(KEY_RECEIVE_HANDS)) {
+                    } else if (keyCommand.equals(KEY_HANDS)) {
                         Log.d(TAG, "HANDS RECEIVED");
                         onHandsReceived(jsonObject);
-                    } else if (jsonObject.has(KEY_RECEIVE_CARD_PLAYED)) {
+                    } else if (keyCommand.equals(KEY_CARD_PLAYED)) {
                         Log.d(TAG, "Played card recieved");
                         onCardPlayedReceived(jsonObject);
-                    } else if (jsonObject.has(KEY_RECEIVE_CRIB)) {
+                    } else if (keyCommand.equals(KEY_CRIB)) {
                         Log.d(TAG, "Crib card recieved");
                         onCribCardReceived(jsonObject);
-                    } else if (jsonObject.has(KEY_RECEIVE_CARD_PLAYED)) {
+                    } else if (keyCommand.equals(KEY_CUT_CARD)) {
                         Log.d(TAG, "Cut card received");
                         onCutCardReceived(jsonObject);
-                    } else if (jsonObject.has(KEY_COULD_NOT_PLAY)) {
+                    } else if (keyCommand.equals(KEY_SCORES_DURING_PLAY)) {
+                        onScoreDuringPlayReceived(jsonObject);
+                    } else if (keyCommand.equals(KEY_COULD_NOT_PLAY)) {
+                        onCouldNotPlayReceived(jsonObject);
+                    } else if (keyCommand.equals("deal")) {
+                        onMyDeal();
+                    } else if (keyCommand.equals("your_turn")) {
                         onNextTurnReceived(jsonObject);
+                    } else if (keyCommand.equals("prep")) {
+                        onPrepForDeal();
+                    } else if (keyCommand.equals("prep_new_play")) {
+                        onPrepNewPlay();
                     } else {
                         Log.d(TAG, "Invalid key command");
                     }
+
+                    System.out.println(keyCommand);
 
                 } catch (JSONException e) {
                     Log.e(TAG, "fail recieveing message from cats", e);
@@ -509,6 +631,20 @@ public class ChromecastManagement {
             }
         }
 
+    }
+
+    public void onMessageReceived(CastDevice castDevice, String namespace, String message) {
+        Log.d(TAG, "onMessageReceived: " + message);
+        if (message != null) {
+            try {
+                JSONObject jsonObject = new JSONObject(message);
+                this.castReceiver.onReceiveJSON(jsonObject);
+            } catch (JSONException e) {
+                Log.e(TAG, "fail recieveing message from catt", e);
+            } catch (Exception e) {
+                Log.e(TAG, "fail recieveing message from cast", e);
+            }
+        }
     }
 
     /**
@@ -520,7 +656,7 @@ public class ChromecastManagement {
      * Interface for passing calls to primary
      */
     public interface MyTestListener {
-        public void receiveHands(String[][] hands, String cribCard);
+        public void receiveHands(String[][] hands);
 
         public void receiveCardPlayed(int playerPosition, int cardPosition);
 
@@ -530,7 +666,19 @@ public class ChromecastManagement {
 
         public void receiveCutCard(String cutCard);
 
-        public void receieveNextTurn(int couldNotPlayCount);
+        public void receieveNextTurn();
+
+        public void receiveScoreDuringPlay(int scoreDuringPlay);
+
+        public void receieveCouldNotPlay(int couldNotPlayCount);
+
+        public void createNewGame();
+
+        public void myDeal();
+
+        public void prepForDeal();
+
+        public void prepNewPlay();
     }
 
     public void setMyTestListener(MyTestListener m) {
@@ -546,20 +694,20 @@ public class ChromecastManagement {
     public void onHandsReceived(JSONObject rootObject) {
         String[][] playerHandsTemp = new String[3][5];
         try {
-            JSONArray tempHands = rootObject.getJSONArray("send_hands");
+            JSONArray tempHands = rootObject.getJSONArray("hands");
             for (int i = 0; i < tempHands.length(); i++) {
                 JSONArray jsonArray = tempHands.getJSONArray(i);
                 System.out.println("jsonArray" + i + ": " + jsonArray);
                 for (int j = 0; j < jsonArray.length(); j++) {
                     System.out.println(jsonArray.get(j).toString());
                     JSONObject tempJSONObj = (JSONObject) jsonArray.get(j);
-                    playerHandsTemp[i][j] = tempJSONObj.get("Rank") + " of " + tempJSONObj.get("Suit");
+                    playerHandsTemp[i][j] = tempJSONObj.get("rank") + " of " + tempJSONObj.get("suit");
                 }
             }
-            String cribCard = rootObject.getString("crib_card");
+            //String cribCard = rootObject.getString("crib_card");
 
             if (myTestListener != null)
-                myTestListener.receiveHands(playerHandsTemp, cribCard);
+                myTestListener.receiveHands(playerHandsTemp);
         } catch (JSONException e) {
             Log.e(TAG, "fail test", e);
         }
@@ -613,14 +761,52 @@ public class ChromecastManagement {
         }
     }
 
-    public void onNextTurnReceived(JSONObject rootObject) {
+    public void onCouldNotPlayReceived(JSONObject rootObject) {
         try {
             int couldNotPlayCount = Integer.parseInt(rootObject.getString("next_turn"));
 
             if (myTestListener != null)
-                myTestListener.receieveNextTurn(couldNotPlayCount);
+                myTestListener.receieveCouldNotPlay(couldNotPlayCount);
         } catch (JSONException e) {
-            Log.e(TAG, "fail grabbing cut card", e);
+            Log.e(TAG, "fail on could not play", e);
         }
     }
+
+    public void onScoreDuringPlayReceived(JSONObject rootObject) {
+        try {
+            int scoreDuringPlay = Integer.parseInt(rootObject.getString(KEY_SCORES_DURING_PLAY));
+
+            if (myTestListener != null)
+                myTestListener.receiveScoreDuringPlay(scoreDuringPlay);
+        } catch (JSONException e) {
+            Log.e(TAG, "fail on catch score during play", e);
+        }
+    }
+
+    public void onNextTurnReceived(JSONObject rootObject) {
+        if (myTestListener != null)
+            myTestListener.receieveNextTurn();
+    }
+
+    public void onMyDeal() {
+        if (myTestListener != null)
+            myTestListener.myDeal();
+    }
+
+    public void createNewGame() {
+        if (myTestListener != null)
+            myTestListener.createNewGame();
+    }
+
+    public void onPrepForDeal() {
+        if (myTestListener != null)
+            myTestListener.prepForDeal();
+    }
+
+    public void onPrepNewPlay() {
+        if (myTestListener != null)
+            myTestListener.prepNewPlay();
+    }
+
+
 }

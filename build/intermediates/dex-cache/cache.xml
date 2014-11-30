@@ -44,11 +44,11 @@
         <dex dex="C:\Users\milord\AndroidStudioProjects\CribbageforChromecast\app\build\intermediates\pre-dexed\debug\internal_impl-19.0.1-e925548ffb71f88e75dada9603374e6f210e5bdb.jar" />
     </item>
     <item
-        jar="D:\Program Files\Android SDK\sdk\extras\android\m2repository\com\android\support\support-annotations\20.0.0\support-annotations-20.0.0.jar"
+        jar="C:\Program Files (x86)\Android\sdk\sdk\extras\android\m2repository\com\android\support\support-annotations\20.0.0\support-annotations-20.0.0.jar"
         jumboMode="false"
         revision="20.0.0"
         sha1="9d9013e9ff35fc3756411e62873c363c70c638fa">
-        <dex dex="C:\Users\milord\AndroidStudioProjects\CribbageforChromecast\app\build\intermediates\pre-dexed\debug\support-annotations-20.0.0-aadbb7538c2da0362a8d73e32de601707b949556.jar" />
+        <dex dex="C:\Users\milord\AndroidStudioProjects\CribbageforChromecast\app\build\intermediates\pre-dexed\debug\support-annotations-20.0.0-3b09dd715e4b4c040088a39aed6caef386ab4182.jar" />
     </item>
 
 </items>

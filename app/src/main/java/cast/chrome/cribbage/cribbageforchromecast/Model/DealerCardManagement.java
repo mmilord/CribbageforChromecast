@@ -1,13 +1,24 @@
-package cast.chrome.cribbage.cribbageforchromecast;
+package cast.chrome.cribbage.cribbageforchromecast.Model;
 
+
+import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import cast.chrome.cribbage.cribbageforchromecast.Interfaces.JSONSerializable;
+import cast.chrome.cribbage.cribbageforchromecast.Utils.Scoring;
+
 /**
  * Created by milord on 08-Nov-14.
  */
-public class DealerCardManagement {
+public class DealerCardManagement implements JSONSerializable {
+
+    private static final String TAG = DealerCardManagement.class.getSimpleName();
 
     String[][] players;
     String[] crib;
@@ -75,7 +86,15 @@ public class DealerCardManagement {
         return players[playerPosition][cardPosition].toString();
     }
 
+    public void setCutCard (String cutCard) { this.cutCard = cutCard; }
+
+    public void setCurrentScore (int newScore) { currentScore = newScore; }
+
+    public void resetActiveCards () { activeCards.clear(); }
+
     public ArrayList<String> getActiveCards() { return activeCards; }
+
+
 
     public int callPlayerHandScoreCheck(int playerPosition) {
         players[playerPosition][4] = drawCard;
@@ -133,16 +152,22 @@ public class DealerCardManagement {
     /**
      * Add card to activeCards variable
      */
-    public void doAddToActiveCards (int playerPosition, int cardPosition) {
+    public int doAddToActiveCards (int playerPosition, int cardPosition) {
+        currentScore += Scoring.cardToScoringValue(players[playerPosition][cardPosition]);
+
+        int tempScore = 0;
+
         if (!activeCards.isEmpty()) {
             activeCards.add(players[playerPosition][cardPosition]);
+            tempScore = Scoring.doPlayPairCheck(players[playerPosition][cardPosition], activeCards);
+            //tempScore += Scoring.doRunCheck(players[playerPosition][cardPosition], activeCards);
+            return tempScore;
         }
         else {
             activeCards.clear();
             activeCards.add(players[playerPosition][cardPosition]);
+            return 0;
         }
-
-        currentScore += Scoring.cardToScoringValue(players[playerPosition][cardPosition]);
     }
 
     /**
@@ -167,14 +192,6 @@ public class DealerCardManagement {
     }
 
     /**
-     * Obtain rank/value of requested card
-     * @return rank as string
-     */
-    public String getCardRankString(int playerPosition, int cardPosition) {
-        return players[playerPosition][cardPosition].toString().substring(0, players[playerPosition][cardPosition].toString().indexOf(" "));
-    }
-
-    /**
      * Remove selected card from players hand
      * @param playerPosition
      * @param replacedCard      card to be removed from hand
@@ -195,26 +212,48 @@ public class DealerCardManagement {
         //players[playerPosition] = temp.toArray(new String[temp.size()]);
     }
 
-    /**
-     * Compare card played with activeCards and check for pairs
-     * @return value based on pair count
-     */
-    public int doPairCheck(int playerPosition, int cardPosition) {
 
-        if (getPlayersCardToString(playerPosition, cardPosition).equals(activeCards.get(activeCards.size()))) {
-            if (getPlayersCardToString(playerPosition, cardPosition).equals(activeCards.get(activeCards.size() - 1))) {
-                if (getPlayersCardToString(playerPosition, cardPosition).equals(activeCards.get(activeCards.size() - 2))) {
-                    return 4;
-                } else {
-                    return 3;
-                }
-            }
-            else {
-                return 2;
-            }
+    @Override
+    public JSONObject toJson() {
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject();
+            jsonObject.put("crib", getJSONArrayForHand(crib));
+            jsonObject.put("hand", getJSONArrayForHands(players));
+        } catch (JSONException e) {
+            Log.d("JSONSerializable", "Could Not Generate JSON for Card");
         }
-        else
-            return 0;
+        return jsonObject;
     }
 
+    JSONArray getJSONArrayForHands(String[][] playerHands) {
+        JSONArray jsonArray = new JSONArray();
+
+        for (String[] hands : playerHands)
+            jsonArray.put(getJSONArrayForHand(hands));
+
+        return jsonArray;
+    }
+
+    JSONArray getJSONArrayForHand(String[] playerHand) {
+        JSONArray jsonArray = new JSONArray();
+
+        for(String card : playerHand)
+            jsonArray.put((getJSONObjectForCard(card)));
+
+        return jsonArray;
+    }
+
+    JSONObject getJSONObjectForCard(String card) {
+        JSONObject jsonObject = null;
+        try {
+            String[] parts = card.split(" of ");
+            jsonObject = new JSONObject();
+            jsonObject.put("Rank", Scoring.getCardRankInteger(parts[0]));
+            jsonObject.put("Suit", parts[1]);
+        } catch (JSONException e) {
+            Log.e(TAG, "fail attaching card to jsonObject", e);
+        }
+        return jsonObject;
+    }
 }

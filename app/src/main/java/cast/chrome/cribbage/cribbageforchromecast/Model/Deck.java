@@ -1,7 +1,9 @@
-package cast.chrome.cribbage.cribbageforchromecast;
+package cast.chrome.cribbage.cribbageforchromecast.Model;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import cast.chrome.cribbage.cribbageforchromecast.Model.Card;
 
 /**
  * Created by milord on 26-Aug-14.

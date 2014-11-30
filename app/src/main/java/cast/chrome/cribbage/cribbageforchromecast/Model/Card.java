@@ -1,4 +1,9 @@
-package cast.chrome.cribbage.cribbageforchromecast;
+package cast.chrome.cribbage.cribbageforchromecast.Model;
+
+import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by milord on 26-Aug-14.
@@ -9,8 +14,7 @@ public class Card {
     private static String[] suitsArray = { "Clubs", "Spades", "Diamonds", "Hearts" };
     private static String[] ranksArray  = { "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King" };
 
-
-    Card(int cardSuit, int cardRank)
+    public Card(int cardSuit, int cardRank)
     {
         this.cardRank = cardRank;
         this.cardSuit = cardSuit;
@@ -28,4 +32,21 @@ public class Card {
     public int getSuit() {
         return cardSuit;
     }
+
+    public Card (int cardNumber) throws Exception {
+
+    }
+
+    public JSONObject toJson() {
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject();
+            jsonObject.put("rank", cardRank);
+            jsonObject.put("suit", cardSuit);
+        } catch (JSONException e) {
+            Log.d("JSONSerializable", "Could Not Generate JSON for Card");
+        }
+        return jsonObject;
+    }
+
 }

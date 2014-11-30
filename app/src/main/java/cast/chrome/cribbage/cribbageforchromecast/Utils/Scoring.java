@@ -1,4 +1,4 @@
-package cast.chrome.cribbage.cribbageforchromecast;
+package cast.chrome.cribbage.cribbageforchromecast.Utils;
 
 import android.content.Context;
 
@@ -13,7 +13,7 @@ public class Scoring {
     /**
      * @return requested card as integer
      */
-    static int cardToScoringValue(String card) {
+    public static int cardToScoringValue(String card) {
         if (card.contains(" "))
             card = card.substring(0, card.indexOf(" "));
         if (card.equals("King") || card.equals("Queen") || card.equals("Jack"))
@@ -23,7 +23,7 @@ public class Scoring {
         else
             return Integer.parseInt(card);
     }
-    static int getCardRankInteger(String card) {
+    public static int getCardRankInteger(String card) {
         if (card.contains(" "))
             card = card.substring(0, card.indexOf(" "));
         if (card.equals("King"))
@@ -37,12 +37,32 @@ public class Scoring {
         else
             return Integer.parseInt(card);
     }
+
+    public static int doPlayPairCheck (String card, ArrayList<String> activeCards) {
+        int count = 0;
+
+        for (int i = activeCards.size() - 1; i > 0 || count < 4; i--)
+            if (card.equals(activeCards.get(i)))
+                count++;
+            else
+                break;
+
+        if (count == 1)
+            return 2;
+        else if (count == 2)
+            return 6;
+        else if (count == 3)
+            return 12;
+        else
+            return 0;
+    }
+
     /**
      * Compare played card with requested card
      * @return true if pair
      */
-    static boolean doPairCheck(String cardPlayed, String activeCard) {
-// card = getCardRankString(playerPosition, cardPosition);
+    public static boolean doPairCheck(String cardPlayed, String activeCard) {
+        // card = getCardRankString(playerPosition, cardPosition);
         if (cardPlayed.equals(activeCard))
             return true;
         else
@@ -62,7 +82,7 @@ return 0;
      * Scores players hand
      * @return score of players hand
      */
-    static int doHandScoreCheck (String[] playerHand) {
+    public static int doHandScoreCheck (String[] playerHand) {
 
         //sorthand(playerHand);
 
@@ -119,7 +139,7 @@ return 0;
         return score;
     }
 
-    static String[] sorthand (String[] playerHand) {
+    public static String[] sorthand (String[] playerHand) {
         String temp;
         boolean sorted = false;
         while (!sorted) {

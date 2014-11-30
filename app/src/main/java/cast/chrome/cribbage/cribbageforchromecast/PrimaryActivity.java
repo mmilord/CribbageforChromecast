@@ -1,6 +1,9 @@
 package cast.chrome.cribbage.cribbageforchromecast;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -13,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.support.v4.view.MenuItemCompat;
@@ -20,6 +24,13 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.*;
 import android.widget.Toast;
+
+import org.json.JSONObject;
+
+import cast.chrome.cribbage.cribbageforchromecast.Interfaces.CastReceiver;
+import cast.chrome.cribbage.cribbageforchromecast.Model.DealerCardManagement;
+import cast.chrome.cribbage.cribbageforchromecast.Utils.AppPreferences;
+import cast.chrome.cribbage.cribbageforchromecast.Utils.ChromecastManagement;
 
 
 public class PrimaryActivity extends ActionBarActivity implements ChromecastManagement.MyTestListener {
@@ -42,8 +53,12 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
     int couldNotPlayCount = 0;
 
+    String myName;
+
     TextView[] hand = new TextView[handCount];
-    Button btnDropCards, btnDisplayCards, btnPlayCard;
+    Button btnDropCards, btnDisplayCards, btnPlayCard, btnDeal;
+
+    ProgressDialog pd;
 
 
     /**
@@ -64,7 +79,14 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         setContentView(R.layout.activity_primary);
         PrimaryActivity.context = getApplicationContext();
 
-        castManager = new ChromecastManagement(getAppContext(), getResources());
+        CastReceiver c = new CastReceiver() {
+            @Override
+            public void onReceiveJSON(JSONObject jsonObject) throws Exception {
+
+            }
+        };
+
+        castManager = new ChromecastManagement(getAppContext(), getResources().getString(R.string.app_id), TAG, c);
 
         //Attach listener for interface
         castManager.setMyTestListener(this);
@@ -88,6 +110,14 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         btnDropCards = (Button) findViewById(R.id.btnDropCards);
         btnDisplayCards = (Button) findViewById(R.id.btnDisplayCards);
         btnPlayCard = (Button) findViewById(R.id.btnPlayCard);
+        btnDeal = (Button) findViewById(R.id.btnDeal);
+
+        btnDeal.setText("Setup Game");
+        btnDeal.setOnClickListener(new  Button.OnClickListener() {
+            public void onClick(View v) {
+                createNewGame();
+            }
+        });
 
         //procedurally generate views later
         hand[0] = (TextView) findViewById(R.id.card1);
@@ -95,10 +125,36 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         hand[2] = (TextView) findViewById(R.id.card3);
         hand[3] = (TextView) findViewById(R.id.card4);
         hand[4] = (TextView) findViewById(R.id.card5);
+
     }
 
     public static Context getAppContext() {
         return PrimaryActivity.context;
+    }
+
+    public void createNewGame() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Create game");
+        alert.setMessage("Name");
+
+        final EditText input = new EditText(this);
+        alert.setView(input);alert.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                myName = input.getText().toString();
+
+                System.out.println(myName);
+
+                castManager.joinGame(myName);
+
+                btnDeal.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        alert.show();
+
+
     }
 
     /**
@@ -117,9 +173,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         btnPlayCard.setVisibility(View.INVISIBLE);
         btnDropCards.setVisibility(View.INVISIBLE);
 
-        castManager.joinGame("bob");
-
-        castManager.sendHands(cardManager.players);
+        castManager.sendHands(cardManager.getPlayers());
         castManager.sendCrib(cardManager.getCrib());
         castManager.sendCutCard(cardManager.getCutCard());
     }
@@ -132,7 +186,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         System.out.println(cardManager.getPlayersCardToString(myPosition, selectedCard));
 
         if (cardManager.canAddToActiveCards(myPosition, selectedCard)) {
-            cardManager.doAddToActiveCards(myPosition, selectedCard);
+            castManager.sendPegPoints(cardManager.doAddToActiveCards(myPosition, selectedCard));
             hand[selectedCard].setClickable(false);
             resetCardPosition();
             hand[selectedCard].setTextColor(Color.GRAY);
@@ -141,9 +195,10 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
             btnPlayCard.setClickable(false);
             btnPlayCard.setTextColor(Color.GRAY);
 
-            castManager.sendPlayerPositionAndCardPositionToCast(myPosition, selectedCard, "send_card_played");
+            //castManager.sendPlayerPositionAndCardPositionToCast(myPosition, selectedCard, "send_card_played");
+            castManager.sendCardPlayed(cardManager.getPlayersCardToString(myPosition, selectedCard));
 
-            castManager.sendIntToCast(cardManager.getCurrentScore(), "send_scores_during_play");
+            castManager.sendIntToCast(cardManager.getCurrentScore(), "scores_during_play");
 
             lockCards();
         }
@@ -156,7 +211,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
      * @param view
      */
     public void dropCard (View view) {
-        castManager.sendPlayerPositionAndCardPositionToCast(myPosition, selectedCard, "send_card_dropped");
+        castManager.sendPlayerPositionAndCardPositionToCast(myPosition, selectedCard, "card_dropped");
 
         replaceCard(selectedCard, myPosition);
         //sendCribToCast(players[myPosition][selectedCard]);
@@ -200,12 +255,17 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
     /**
      * Display players hand on screen
-     * @param view
      */
     public void displayHand (View view) {
 
         resetCardPosition();
 
+        drawHands();
+
+        //Scoring.doHandScoreCheck(cardManager.players[1]);
+    }
+
+    public void drawHands() {
         for (int i = 0; i < handCount; i++) {
             hand[i].setText(cardManager.getPlayersCardToString(myPosition, i));
             hand[i].setVisibility(View.VISIBLE);
@@ -216,8 +276,6 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         btnDropCards.setVisibility(View.VISIBLE);
         btnDropCards.setClickable(false);
         btnDropCards.setTextColor(Color.GRAY);
-
-        //Scoring.doHandScoreCheck(cardManager.players[1]);
     }
 
     /**
@@ -239,8 +297,9 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
             }
         }
 
-        if (couldNotPlayCount == 3) {
-            //reset activecards and playscore
+        if (couldNotPlayCount == 2) {
+            castManager.sendPrepNewPlay();
+            cardManager.setCurrentScore(0);
         } else if (canPlay) {
             btnPlayCard.setClickable(true);
             btnPlayCard.setTextColor(Color.BLACK);
@@ -249,6 +308,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
             btnPlayCard.setClickable(false);
             btnPlayCard.setTextColor(Color.GRAY);
             castManager.sendNextPlayerTurn(couldNotPlayCount++);
+            System.out.println("could not play");
         }
     }
 
@@ -435,31 +495,58 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
      * Initiates new game based on hands received
      * @param playerHandsTemp
      */
-    public void receiveHands(String[][] playerHandsTemp, String cribCard) {
-        cardManager = new DealerCardManagement(playerHandsTemp, cribCard);
+    public void receiveHands(String[][] playerHandsTemp) {
+        pd.dismiss();
+        cardManager = new DealerCardManagement(playerHandsTemp, "5 of Clubs");
+        myPosition = 0;
+        drawHands();
     }
 
     public void receiveCardPlayed(int playerPosition, int cardPosition) {
-        cardManager.doAddToActiveCards(playerPosition, cardPosition);
-
+        int j = cardManager.doAddToActiveCards(playerPosition, cardPosition);
         myTurn();
     }
 
     public void receiveCribCard(int playerPosition, int cardPlayed) {
-        cardManager.addToCrib(cardManager.players[playerPosition][cardPlayed]);
+        cardManager.addToCrib(cardManager.getPlayersCardToString(playerPosition, cardPlayed));
     }
 
     public void receievePlayerPosition (int playerPosition) {
         myPosition = playerPosition;
     }
 
-    public void receiveCutCard (String cutCard) {
-        cardManager.cutCard = cutCard;
+    public void receiveCutCard (String cutCard) { cardManager.setCutCard(cutCard); }
+
+    public void receieveNextTurn() {
+        myTurn();
     }
 
-    public void receieveNextTurn(int couldNotPlayCount) {
+    public void receiveScoreDuringPlay(int scoreDuringPlay) {
+        cardManager.setCurrentScore(scoreDuringPlay);
+    }
+
+    public void myDeal() {
+        btnDeal.setText("Deal");
+        btnDeal.setVisibility(View.VISIBLE);
+        btnDeal.setOnClickListener(new  Button.OnClickListener() {
+            public void onClick (View v) {
+                newDeal(v);
+            }
+        });
+    }
+
+    public void prepForDeal() {
+        pd = ProgressDialog.show(PrimaryActivity.this, "", "Other player is dealing. . . ");
+    }
+
+    public void receieveCouldNotPlay(int couldNotPlayCount) {
         this.couldNotPlayCount = couldNotPlayCount;
 
         myTurn();
+    }
+
+    public void prepNewPlay() {
+        castManager.sendPrepNewPlay();
+        cardManager.setCurrentScore(0);
     }
 }
