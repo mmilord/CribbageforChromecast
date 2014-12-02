@@ -18,7 +18,7 @@
         android:id="@+id/btnDeal"
         android:onClick="newDeal"
         android:focusable="false"
-        android:visibility="visible"
+        android:visibility="invisible"
         android:layout_toEndOf="@+id/card1"
         android:layout_marginLeft="162dp"
         android:layout_alignParentBottom="true"
@@ -157,6 +157,17 @@
         android:layout_alignRight="@+id/card3"
         android:layout_alignEnd="@+id/card3"
         android:onClick="playCard"
+        android:visibility="invisible" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Current Score: "
+        android:id="@+id/scoreTextView"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/btnDropCards"
+        android:layout_alignEnd="@+id/btnDropCards"
         android:visibility="invisible" />
 
 </RelativeLayout>

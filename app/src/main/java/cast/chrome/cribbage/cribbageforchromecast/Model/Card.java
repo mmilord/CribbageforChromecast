@@ -12,7 +12,7 @@ public class Card {
     private int cardRank, cardSuit;
 
     private static String[] suitsArray = { "Clubs", "Spades", "Diamonds", "Hearts" };
-    private static String[] ranksArray  = { "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King" };
+    private static String[] ranksArray  = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
 
     public Card(int cardSuit, int cardRank)
     {

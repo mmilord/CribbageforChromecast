@@ -46,7 +46,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
     int MASTER_HEIGHT, MASTER_WIDTH, PADDING_SIDE = 64, PADDING_TOP = 16, PADDING_BOT = 16, FOUR_CARD_SIZE, FIVE_CARD_SIZE, SIX_CARD_SIZE;
 
     //hard for now
-    int myPosition = 1;
+    int myPosition;
     int handCount = 5;
 
     int selectedCard;
@@ -57,6 +57,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
     TextView[] hand = new TextView[handCount];
     Button btnDropCards, btnDisplayCards, btnPlayCard, btnDeal;
+    TextView txtCurrentScore;
 
     ProgressDialog pd;
 
@@ -111,6 +112,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         btnDisplayCards = (Button) findViewById(R.id.btnDisplayCards);
         btnPlayCard = (Button) findViewById(R.id.btnPlayCard);
         btnDeal = (Button) findViewById(R.id.btnDeal);
+        txtCurrentScore = (TextView) findViewById(R.id.scoreTextView);
 
         btnDeal.setText("Setup Game");
         btnDeal.setOnClickListener(new  Button.OnClickListener() {
@@ -164,6 +166,8 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
     public void newDeal (View view) {
         cardManager = new DealerCardManagement(3);
 
+        myPosition = 1;
+
         for (int i = 0; i < 5; i++) {
             resetFullLayout();
             hand[i].setVisibility(View.INVISIBLE);
@@ -172,6 +176,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         btnDisplayCards.setVisibility(View.VISIBLE);
         btnPlayCard.setVisibility(View.INVISIBLE);
         btnDropCards.setVisibility(View.INVISIBLE);
+        btnDeal.setVisibility(View.INVISIBLE);
 
         castManager.sendHands(cardManager.getPlayers());
         castManager.sendCrib(cardManager.getCrib());
@@ -196,7 +201,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
             btnPlayCard.setTextColor(Color.GRAY);
 
             //castManager.sendPlayerPositionAndCardPositionToCast(myPosition, selectedCard, "send_card_played");
-            castManager.sendCardPlayed(cardManager.getPlayersCardToString(myPosition, selectedCard));
+            castManager.sendCardPlayed(cardManager.getPlayersCardToString(myPosition, selectedCard), myPosition, selectedCard);
 
             castManager.sendIntToCast(cardManager.getCurrentScore(), "scores_during_play");
 
@@ -226,6 +231,10 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         //btnPlayCard.setClickable(false);
         btnPlayCard.setTextColor(Color.WHITE);
 
+        if (myPosition == 1)
+            lockCards();
+
+        txtCurrentScore.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -299,7 +308,9 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
         if (couldNotPlayCount == 2) {
             castManager.sendPrepNewPlay();
+            cardManager.resetActiveCards();
             cardManager.setCurrentScore(0);
+            drawCurrentScore();
         } else if (canPlay) {
             btnPlayCard.setClickable(true);
             btnPlayCard.setTextColor(Color.BLACK);
@@ -377,6 +388,10 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
             //btnPlayCard.setVisibility(View.INVISIBLE);
         }
 
+    }
+
+    public void drawCurrentScore() {
+        txtCurrentScore.setText("Current score :" + cardManager.getCurrentScore());
     }
 
     /**
@@ -523,6 +538,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
     public void receiveScoreDuringPlay(int scoreDuringPlay) {
         cardManager.setCurrentScore(scoreDuringPlay);
+        drawCurrentScore();
     }
 
     public void myDeal() {
@@ -546,7 +562,12 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
     }
 
     public void prepNewPlay() {
-        castManager.sendPrepNewPlay();
+        cardManager.resetActiveCards();
         cardManager.setCurrentScore(0);
+        drawCurrentScore();
+    }
+
+    public void initGame() {
+        btnDeal.setVisibility(View.VISIBLE);
     }
 }

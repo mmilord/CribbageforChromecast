@@ -10,29 +10,32 @@ import java.util.Arrays;
  * Created by milord on 12-Nov-14.
  */
 public class Scoring {
+
     /**
      * @return requested card as integer
      */
     public static int cardToScoringValue(String card) {
         if (card.contains(" "))
             card = card.substring(0, card.indexOf(" "));
-        if (card.equals("King") || card.equals("Queen") || card.equals("Jack"))
+
+        if (card.equals("K") || card.equals("Q") || card.equals("J"))
             return 10;
-        else if (card.equals("Ace"))
+        else if (card.equals("A"))
             return 1;
         else
             return Integer.parseInt(card);
     }
+
     public static int getCardRankInteger(String card) {
         if (card.contains(" "))
             card = card.substring(0, card.indexOf(" "));
-        if (card.equals("King"))
+        if (card.equals("K"))
             return 13;
-        else if (card.equals("Queen"))
+        else if (card.equals("Q"))
             return 12;
-        else if (card.equals("Jack"))
+        else if (card.equals("J"))
             return 11;
-        else if (card.equals("Ace"))
+        else if (card.equals("A"))
             return 1;
         else
             return Integer.parseInt(card);

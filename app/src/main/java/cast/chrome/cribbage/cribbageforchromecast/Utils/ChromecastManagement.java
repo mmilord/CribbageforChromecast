@@ -51,6 +51,8 @@ public class ChromecastManagement extends MediaRouter.Callback implements Google
     private static final String KEY_SCORES_DURING_SHOW = "scores_during_show";
     private static final String KEY_PEG_POINTS = "peg_points";
     private static final String KEY_PREP_NEW_PLAY = "prep_new_play";
+    private static final String KEY_PLAYER_POSITION = "player_position";
+    private static final String KEY_CARD_POSITION = "card_position";
 
 
     private static final String KEY_NEXT_PLAYER_TURN = "next_player_turn";
@@ -200,7 +202,7 @@ public class ChromecastManagement extends MediaRouter.Callback implements Google
         try {
             String[] parts = card.split(" of ");
             jsonObject = new JSONObject();
-            jsonObject.put("rank", Scoring.getCardRankInteger(parts[0]));
+            jsonObject.put("rank", parts[0]);
             jsonObject.put("suit", parts[1]);
         } catch (JSONException e) {
             Log.e(TAG, "fail attaching card to jsonObject", e);
@@ -253,8 +255,8 @@ public class ChromecastManagement extends MediaRouter.Callback implements Google
     public void sendNextPlayerTurn(int couldNotPlay) {
         try {
             JSONObject payload = new JSONObject();
-            payload.put(KEY_COMMAND, KEY_NEXT_PLAYER_TURN);
-            payload.put(KEY_NEXT_PLAYER_TURN, couldNotPlay);
+            payload.put(KEY_COMMAND, KEY_COULD_NOT_PLAY);
+            payload.put(KEY_COULD_NOT_PLAY, couldNotPlay);
             sendMessage(payload.toString());
         } catch (JSONException e) {
             Log.e(TAG, "fail sending next turn to cast", e);
@@ -269,18 +271,20 @@ public class ChromecastManagement extends MediaRouter.Callback implements Google
             payload.put(KEY_CUT_CARD, getJSONObjectForCard(card));
             sendMessage(payload.toString());
         } catch (JSONException e) {
-            Log.e(TAG, "fail sending dropped card to cast", e);
+            Log.e(TAG, "fail sending cut card to cast", e);
         }
     }
 
-    public void sendCardPlayed (String card) {
+    public void sendCardPlayed (String card, int playerPosition, int cardPosition) {
         try {
             JSONObject payload = new JSONObject();
             payload.put(KEY_COMMAND, KEY_CARD_PLAYED);
             payload.put(KEY_CARD_PLAYED, getJSONObjectForCard(card));
+            payload.put(KEY_PLAYER_POSITION, playerPosition);
+            payload.put(KEY_CARD_POSITION, cardPosition);
             sendMessage(payload.toString());
         } catch (JSONException e) {
-            Log.e(TAG, "fail sending dropped card to cast", e);
+            Log.e(TAG, "fail sending played card to cast", e);
         }
     }
 
@@ -438,6 +442,8 @@ public class ChromecastManagement extends MediaRouter.Callback implements Google
                                             }
                                         }
                                     });
+                    if (myTestListener != null)
+                        myTestListener.initGame();
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Failed to launch application", e);
@@ -513,7 +519,7 @@ public class ChromecastManagement extends MediaRouter.Callback implements Google
 
             // set the initial instructions
             // on the receiver
-            sendMessage("hi");
+            //sendMessage("hi");
         } else {
             Log.e(TAG, "application could not launch");
             teardown();
@@ -679,6 +685,8 @@ public class ChromecastManagement extends MediaRouter.Callback implements Google
         public void prepForDeal();
 
         public void prepNewPlay();
+
+        public void initGame();
     }
 
     public void setMyTestListener(MyTestListener m) {

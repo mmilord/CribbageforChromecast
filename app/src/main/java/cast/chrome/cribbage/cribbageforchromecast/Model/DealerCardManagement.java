@@ -161,6 +161,10 @@ public class DealerCardManagement implements JSONSerializable {
             activeCards.add(players[playerPosition][cardPosition]);
             tempScore = Scoring.doPlayPairCheck(players[playerPosition][cardPosition], activeCards);
             //tempScore += Scoring.doRunCheck(players[playerPosition][cardPosition], activeCards);
+
+            if (currentScore == 15)
+                tempScore += 2;
+
             return tempScore;
         }
         else {
@@ -179,12 +183,7 @@ public class DealerCardManagement implements JSONSerializable {
 
         if (!activeCards.isEmpty()) {
             for (int i = 0; i < activeCards.size(); i++) {
-                int cardToAdd = Scoring.cardToScoringValue(activeCards.get(0));
-
-                if (count <= 20 && cardToAdd == 1)
-                    count += cardToAdd + 10;
-                else
-                    count += cardToAdd;
+                count += Scoring.cardToScoringValue(activeCards.get(i));
             }
         }
 
