@@ -30,7 +30,7 @@
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_weight=".7"
-            android:background="#0faf30"
+            android:background="@color/accent"
             android:elevation="2dp">
         </LinearLayout>
 
@@ -38,8 +38,8 @@
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_weight=".3"
-            android:background="#663300"
-            android:elevation="10dp">
+            android:background="#7c4dff"
+            android:elevation="3dp">
 
             </LinearLayout>
 
@@ -55,9 +55,8 @@
             android:layout_height="0dp"
             android:layout_weight=".8"
             android:animateLayoutChanges="true"
-            android:paddingTop="50dp"
+            android:paddingTop="?android:attr/actionBarSize"
             android:paddingBottom="15dp"
-            android:elevation="8dp"
             android:orientation="horizontal">
 
 
@@ -71,36 +70,41 @@
                 android:background="@drawable/back"
                 android:layout_marginLeft="8dp"
                 android:layout_marginTop="25dp"
+                android:layout_marginBottom="1dp"
                 android:onClick="selectCard"
                 android:layout_marginRight="3dp"
                 android:clickable="true"
                 android:layout_weight=".2"
-                android:elevation="8dp"
+                android:elevation="5dp"
                 >
 
                 <TextView
-                    android:layout_width="65dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginLeft="2dp"
-                    android:text="3"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginLeft="5dp"
+                    android:text="3\n♥"
                     android:gravity="center"
                     android:id="@+id/card1rank"
-                    android:textSize="40dp"
+                    android:textSize="20sp"
                     android:textColor="#ffff0000"
+                    android:fontFamily="sans-serif-light"
                     />
 
                 <TextView
-                    android:layout_width="65dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="2dp"
-                    android:layout_marginTop="-15dp"
-                    android:layout_below="@+id/card1rank"
-                    android:text="hearts"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:text="3\n♥"
                     android:gravity="center"
-                    android:id="@+id/card1suit"
-                    android:textSize="40dp"
+                    android:id="@+id/card1rankDown"
+                    android:textSize="20sp"
                     android:textColor="#ffff0000"
+                    android:rotation = "180"
+                    android:fontFamily="sans-serif-light"
                     />
 
             </RelativeLayout>
@@ -115,36 +119,41 @@
                 android:background="@drawable/back"
                 android:layout_marginLeft="3dp"
                 android:layout_marginTop="25dp"
+                android:layout_marginBottom="1dp"
                 android:onClick="selectCard"
                 android:layout_marginRight="3dp"
                 android:clickable="true"
                 android:layout_weight=".2"
-                android:elevation="8dp"
+                android:elevation="5dp"
                 >
 
                 <TextView
-                    android:layout_width="65dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginLeft="2dp"
-                    android:text="3"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginLeft="5dp"
+                    android:text="3\n♥"
                     android:gravity="center"
                     android:id="@+id/card2rank"
-                    android:textSize="40dp"
+                    android:textSize="20dp"
                     android:textColor="#ffff0000"
+                    android:fontFamily="sans-serif-light"
                     />
 
                 <TextView
-                    android:layout_width="65dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="2dp"
-                    android:layout_marginTop="-15dp"
-                    android:layout_below="@+id/card2rank"
-                    android:text="hearts"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:text="3\n♥"
                     android:gravity="center"
-                    android:id="@+id/card2suit"
-                    android:textSize="40dp"
+                    android:id="@+id/card2rankDown"
+                    android:textSize="20dp"
                     android:textColor="#ffff0000"
+                    android:rotation = "180"
+                    android:fontFamily="sans-serif-light"
                     />
 
             </RelativeLayout>
@@ -159,36 +168,41 @@
                 android:background="@drawable/back"
                 android:layout_marginLeft="3dp"
                 android:layout_marginTop="25dp"
+                android:layout_marginBottom="1dp"
                 android:onClick="selectCard"
                 android:layout_marginRight="3dp"
                 android:clickable="true"
                 android:layout_weight=".2"
-                android:elevation="8dp"
+                android:elevation="5dp"
                 >
 
                 <TextView
-                    android:layout_width="65dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginLeft="2dp"
-                    android:text="3"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginLeft="5dp"
+                    android:text="3\n♥"
                     android:gravity="center"
                     android:id="@+id/card3rank"
-                    android:textSize="40dp"
+                    android:textSize="20dp"
                     android:textColor="#ffff0000"
+                    android:fontFamily="sans-serif-light"
                     />
 
                 <TextView
-                    android:layout_width="65dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="2dp"
-                    android:layout_marginTop="-15dp"
-                    android:layout_below="@+id/card3rank"
-                    android:text="hearts"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:text="3\n♥"
                     android:gravity="center"
-                    android:id="@+id/card3suit"
-                    android:textSize="40dp"
+                    android:id="@+id/card3rankDown"
+                    android:textSize="20dp"
                     android:textColor="#ffff0000"
+                    android:rotation = "180"
+                    android:fontFamily="sans-serif-light"
                     />
 
             </RelativeLayout>
@@ -203,36 +217,41 @@
                 android:background="@drawable/back"
                 android:layout_marginLeft="3dp"
                 android:layout_marginTop="25dp"
+                android:layout_marginBottom="1dp"
                 android:onClick="selectCard"
                 android:layout_marginRight="3dp"
                 android:clickable="true"
                 android:layout_weight=".2"
-                android:elevation="8dp"
+                android:elevation="5dp"
                 >
 
                 <TextView
-                    android:layout_width="65dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginLeft="2dp"
-                    android:text="3"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginLeft="5dp"
+                    android:text="3\n♥"
                     android:gravity="center"
                     android:id="@+id/card4rank"
-                    android:textSize="40dp"
+                    android:textSize="20dp"
                     android:textColor="#ffff0000"
+                    android:fontFamily="sans-serif-light"
                     />
 
                 <TextView
-                    android:layout_width="65dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="2dp"
-                    android:layout_marginTop="-15dp"
-                    android:layout_below="@+id/card4rank"
-                    android:text="hearts"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:text="3\n♥"
                     android:gravity="center"
-                    android:id="@+id/card4suit"
-                    android:textSize="40dp"
+                    android:id="@+id/card4rankDown"
+                    android:textSize="20dp"
                     android:textColor="#ffff0000"
+                    android:rotation = "180"
+                    android:fontFamily="sans-serif-light"
                     />
 
             </RelativeLayout>
@@ -247,36 +266,41 @@
                 android:background="@drawable/back"
                 android:layout_marginLeft="3dp"
                 android:layout_marginTop="25dp"
+                android:layout_marginBottom="1dp"
                 android:onClick="selectCard"
                 android:layout_marginRight="8dp"
                 android:clickable="true"
                 android:layout_weight=".2"
-                android:elevation="8dp"
+                android:elevation="5dp"
                 >
 
                 <TextView
-                    android:layout_width="65dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginLeft="2dp"
-                    android:text="3"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginLeft="5dp"
+                    android:text="3\n♥"
                     android:gravity="center"
                     android:id="@+id/card5rank"
-                    android:textSize="40dp"
+                    android:textSize="20dp"
                     android:textColor="#ffff0000"
+                    android:fontFamily="sans-serif-light"
                     />
 
                 <TextView
-                    android:layout_width="65dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="2dp"
-                    android:layout_marginTop="-15dp"
-                    android:layout_below="@+id/card5rank"
-                    android:text="hearts"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:text="3\n♥"
                     android:gravity="center"
-                    android:id="@+id/card5suit"
-                    android:textSize="40dp"
+                    android:id="@+id/card5rankDown"
+                    android:textSize="20dp"
                     android:textColor="#ffff0000"
+                    android:rotation = "180"
+                    android:fontFamily="sans-serif-light"
                     />
 
             </RelativeLayout>
@@ -345,15 +369,15 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Current Score: 0"
                 android:id="@+id/scoreTextView"
                 android:gravity="center"
+                android:textColor="#FFF"
                 android:layout_alignParentBottom="true"
                 android:layout_alignRight="@+id/btnDropCards"
                 android:layout_alignEnd="@+id/btnDropCards"
-                android:visibility="visible"
-                android:elevation="8dp" />
+                android:visibility="visible" />
         </LinearLayout>
     </LinearLayout>
 
