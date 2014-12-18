@@ -1,17 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-
-
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppTheme.Base">
+    <style name="AppTheme"
+        parent="Theme.AppCompat.Light.NoActionBar">
     </style>
 
-    <style name="AppTheme.Base"
-        parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme.Teal" parent="AppTheme">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
+        <item name="colorSecondary">@color/secondary</item>
         <item name="android:windowActionBarOverlay">false</item>
+        <item name="themeName">teal</item>
+    </style>
+
+    <style name="AppTheme.Dark" parent="AppTheme">
+        <item name="colorPrimary">@color/primary_alt</item>
+        <item name="colorPrimaryDark">@color/primary_dark_alt</item>
+        <item name="colorAccent">@color/accent_alt</item>
+        <item name="colorSecondary">@color/secondary_alt</item>
+        <item name="android:windowActionBarOverlay">false</item>
+        <item name="themeName">dark</item>
+    </style>
+
+
+
+    <style name="ButtonStyle" parent="android:style/Widget.Material.Button">
+        <item name="android:background">@drawable/ripple</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:layout_marginBottom">@dimen/activity_vertical_margin</item>
+        <item name="android:elevation">@dimen/button_elevation</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="android:height">36dp</item>
+        <item name="android:textColor">#FFFFFF</item>
     </style>
 </resources>

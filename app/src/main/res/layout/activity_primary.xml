@@ -30,16 +30,16 @@
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_weight=".7"
-            android:background="@color/accent"
-            android:elevation="2dp">
+            android:background="?attr/colorSecondary"
+            android:elevation="3dp">
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_weight=".3"
-            android:background="#7c4dff"
-            android:elevation="3dp">
+            android:background="?attr/colorPrimary"
+            android:elevation="1dp">
 
             </LinearLayout>
 
@@ -51,10 +51,10 @@
         android:orientation="vertical" >
 
         <LinearLayout
+            android:id="@+id/card_container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".8"
-            android:animateLayoutChanges="true"
             android:paddingTop="?android:attr/actionBarSize"
             android:paddingBottom="15dp"
             android:orientation="horizontal">
@@ -67,15 +67,16 @@
                 android:text="Medium Text"
                 android:id="@+id/card1"
                 android:visibility="visible"
-                android:background="@drawable/back"
+                android:background="@drawable/card_back"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="25dp"
-                android:layout_marginBottom="1dp"
+                android:layout_marginTop="@dimen/card_margin_top"
+                android:layout_marginBottom="@dimen/card_margin_bottom"
                 android:onClick="selectCard"
                 android:layout_marginRight="3dp"
                 android:clickable="true"
                 android:layout_weight=".2"
-                android:elevation="5dp"
+                android:elevation="3dp"
+                android:animateLayoutChanges="true"
                 >
 
                 <TextView
@@ -88,8 +89,7 @@
                     android:id="@+id/card1rank"
                     android:textSize="20sp"
                     android:textColor="#ffff0000"
-                    android:fontFamily="sans-serif-light"
-                    />
+                    android:fontFamily="sans" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -104,8 +104,18 @@
                     android:textSize="20sp"
                     android:textColor="#ffff0000"
                     android:rotation = "180"
+                    android:fontFamily="sans" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="T\nH\nR\nE\nE"
+                    android:id="@+id/card1rankBig"
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:textColor="#ffff0000"
                     android:fontFamily="sans-serif-light"
-                    />
+                    android:gravity="center" />
 
             </RelativeLayout>
 
@@ -116,15 +126,16 @@
                 android:text="Medium Text"
                 android:id="@+id/card2"
                 android:visibility="visible"
-                android:background="@drawable/back"
+                android:background="@drawable/card_back"
                 android:layout_marginLeft="3dp"
-                android:layout_marginTop="25dp"
-                android:layout_marginBottom="1dp"
+                android:layout_marginTop="@dimen/card_margin_top"
+                android:layout_marginBottom="@dimen/card_margin_bottom"
                 android:onClick="selectCard"
                 android:layout_marginRight="3dp"
                 android:clickable="true"
                 android:layout_weight=".2"
-                android:elevation="5dp"
+                android:elevation="3dp"
+                android:animateLayoutChanges="true"
                 >
 
                 <TextView
@@ -137,8 +148,7 @@
                     android:id="@+id/card2rank"
                     android:textSize="20dp"
                     android:textColor="#ffff0000"
-                    android:fontFamily="sans-serif-light"
-                    />
+                    android:fontFamily="sans" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -153,8 +163,18 @@
                     android:textSize="20dp"
                     android:textColor="#ffff0000"
                     android:rotation = "180"
+                    android:fontFamily="sans" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="T\nH\nR\nE\nE"
+                    android:id="@+id/card2rankBig"
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:textColor="#ffff0000"
                     android:fontFamily="sans-serif-light"
-                    />
+                    android:gravity="center" />
 
             </RelativeLayout>
 
@@ -165,15 +185,16 @@
                 android:text="Medium Text"
                 android:id="@+id/card3"
                 android:visibility="visible"
-                android:background="@drawable/back"
+                android:background="@drawable/card_back"
                 android:layout_marginLeft="3dp"
-                android:layout_marginTop="25dp"
-                android:layout_marginBottom="1dp"
+                android:layout_marginTop="@dimen/card_margin_top"
+                android:layout_marginBottom="@dimen/card_margin_bottom"
                 android:onClick="selectCard"
                 android:layout_marginRight="3dp"
                 android:clickable="true"
                 android:layout_weight=".2"
-                android:elevation="5dp"
+                android:elevation="3dp"
+                android:animateLayoutChanges="true"
                 >
 
                 <TextView
@@ -186,8 +207,7 @@
                     android:id="@+id/card3rank"
                     android:textSize="20dp"
                     android:textColor="#ffff0000"
-                    android:fontFamily="sans-serif-light"
-                    />
+                    android:fontFamily="sans" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -202,8 +222,18 @@
                     android:textSize="20dp"
                     android:textColor="#ffff0000"
                     android:rotation = "180"
-                    android:fontFamily="sans-serif-light"
-                    />
+                    android:fontFamily="sans" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="T\nH\nR\nE\nE"
+                    android:id="@+id/card3rankBig"
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:textColor="#ffff0000"
+                    android:gravity="center"
+                    android:fontFamily="sans-serif-light" />
 
             </RelativeLayout>
 
@@ -214,15 +244,16 @@
                 android:text="Medium Text"
                 android:id="@+id/card4"
                 android:visibility="visible"
-                android:background="@drawable/back"
+                android:background="@drawable/card_back"
                 android:layout_marginLeft="3dp"
-                android:layout_marginTop="25dp"
-                android:layout_marginBottom="1dp"
+                android:layout_marginTop="@dimen/card_margin_top"
+                android:layout_marginBottom="@dimen/card_margin_bottom"
                 android:onClick="selectCard"
                 android:layout_marginRight="3dp"
                 android:clickable="true"
                 android:layout_weight=".2"
-                android:elevation="5dp"
+                android:elevation="3dp"
+                android:animateLayoutChanges="true"
                 >
 
                 <TextView
@@ -235,8 +266,7 @@
                     android:id="@+id/card4rank"
                     android:textSize="20dp"
                     android:textColor="#ffff0000"
-                    android:fontFamily="sans-serif-light"
-                    />
+                    android:fontFamily="sans" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -251,8 +281,18 @@
                     android:textSize="20dp"
                     android:textColor="#ffff0000"
                     android:rotation = "180"
+                    android:fontFamily="sans" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="T\nH\nR\nE\nE"
+                    android:id="@+id/card4rankBig"
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:textColor="#ffff0000"
                     android:fontFamily="sans-serif-light"
-                    />
+                    android:gravity="center" />
 
             </RelativeLayout>
 
@@ -263,15 +303,16 @@
                 android:text="Medium Text"
                 android:id="@+id/card5"
                 android:visibility="visible"
-                android:background="@drawable/back"
+                android:background="@drawable/card_back"
                 android:layout_marginLeft="3dp"
-                android:layout_marginTop="25dp"
-                android:layout_marginBottom="1dp"
+                android:layout_marginTop="@dimen/card_margin_top"
+                android:layout_marginBottom="@dimen/card_margin_bottom"
                 android:onClick="selectCard"
                 android:layout_marginRight="8dp"
                 android:clickable="true"
                 android:layout_weight=".2"
-                android:elevation="5dp"
+                android:elevation="3dp"
+                android:animateLayoutChanges="true"
                 >
 
                 <TextView
@@ -284,8 +325,7 @@
                     android:id="@+id/card5rank"
                     android:textSize="20dp"
                     android:textColor="#ffff0000"
-                    android:fontFamily="sans-serif-light"
-                    />
+                    android:fontFamily="sans" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -300,8 +340,18 @@
                     android:textSize="20dp"
                     android:textColor="#ffff0000"
                     android:rotation = "180"
+                    android:fontFamily="sans" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="T\nH\nR\nE\nE"
+                    android:id="@+id/card5rankBig"
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:textColor="#ffff0000"
                     android:fontFamily="sans-serif-light"
-                    />
+                    android:gravity="center" />
 
             </RelativeLayout>
 
@@ -311,24 +361,24 @@
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_weight=".15"
-            android:elevation="6dp" >
+            android:elevation="2dp" >
 
             <Button
-                style="?android:attr/buttonStyleSmall"
+                style="@style/ButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Deal"
                 android:id="@+id/btnDeal"
-                android:onClick="newDeal"
                 android:focusable="false"
-                android:visibility="invisible"
+                android:visibility="visible"
+                android:stateListAnimator="@anim/button_raise_lower"
                 android:layout_marginLeft="20dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:elevation="8dp" />
+                android:layout_alignParentStart="true" />
 
             <Button
+                style="@style/ButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Display"
@@ -336,13 +386,14 @@
                 android:layout_toEndOf="@+id/btnDeal"
                 android:layout_marginLeft="10dp"
                 android:onClick="displayHand"
+                android:stateListAnimator="@anim/button_raise_lower"
                 android:layout_alignParentBottom="true"
                 android:layout_toRightOf="@+id/btnDeal"
                 android:clickable="true"
-                android:visibility="invisible"
-                android:elevation="8dp" />
+                android:visibility="visible" />
 
             <Button
+                style="@style/ButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Drop"
@@ -350,21 +401,29 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
+                android:stateListAnimator="@anim/button_raise_lower"
                 android:clickable="true"
                 android:visibility="invisible"
-                android:onClick="dropCard"
-                android:elevation="8dp" />
+                android:onClick="dropCard" />
 
             <Button
-                style="?android:attr/buttonStyleSmall"
+                style="@style/ButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Play"
                 android:id="@+id/btnPlayCard"
                 android:layout_alignTop="@+id/btnDisplayCards"
+                android:stateListAnimator="@anim/button_raise_lower"
                 android:onClick="playCard"
-                android:visibility="invisible"
-                android:elevation="8dp" />
+                android:visibility="invisible" />
+
+            <Button
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Switch Theme"
+                android:onClick="switchTheme"
+                android:id="@+id/button" />
 
             <TextView
                 android:layout_width="match_parent"

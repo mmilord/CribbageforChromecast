@@ -6,7 +6,7 @@
         android:allowBackup="true"
         android:icon="@drawable/cribbage"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme.Teal" >
 
         <meta-data
             android:name="com.google.android.gms.version"

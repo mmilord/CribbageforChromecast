@@ -1,5 +1,6 @@
 package cast.chrome.cribbage.cribbageforchromecast;
 
+import android.animation.LayoutTransition;
 import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -11,6 +12,8 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -21,7 +24,10 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Transformation;
 import android.view.animation.TranslateAnimation;
@@ -38,10 +44,9 @@ import android.widget.Toast;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
-import cast.chrome.cribbage.cribbageforchromecast.Interfaces.CastReceiver;
-import cast.chrome.cribbage.cribbageforchromecast.Model.DealerCardManagement;
-import cast.chrome.cribbage.cribbageforchromecast.Utils.AppPreferences;
-import cast.chrome.cribbage.cribbageforchromecast.Utils.ChromecastManagement;
+import cast.chrome.cribbage.cribbageforchromecast.Interfaces.*;
+import cast.chrome.cribbage.cribbageforchromecast.Model.*;
+import cast.chrome.cribbage.cribbageforchromecast.Utils.*;
 
 
 public class PrimaryActivity extends ActionBarActivity implements ChromecastManagement.MyTestListener {
@@ -70,13 +75,29 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
     TextView[] handRankLabel = new TextView[handCount];
     TextView[] handRankLabelUpsideDown = new TextView[handCount];
+    TextView[] handRankLabelBig = new TextView[handCount];
     RelativeLayout[] cardNumber = new RelativeLayout[handCount];
 
     Button btnDropCards, btnDisplayCards, btnPlayCard, btnDeal;
     TextView txtCurrentScore;
 
+    Typeface font;
+
     ProgressDialog pd;
 
+    private static final String[] numberToText = {
+            "",
+            "ONE",
+            "TWO",
+            "THREE",
+            "FOUR",
+            "FIVE",
+            "SIX",
+            "SEVEN",
+            "EIGHT",
+            "NINE",
+            "TEN",
+    };
 
     /**
      * Setters and getters
@@ -92,9 +113,20 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        SharedPreferences prefs = getSharedPreferences("cast.chrome.cribbage.cribbageforchromecast", MODE_PRIVATE);
+        String theme = prefs.getString("theme", null);
+
+        if (theme != null)
+            if (theme.equals("dark"))
+                setTheme(R.style.AppTheme_Dark);
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_primary);
         PrimaryActivity.context = getApplicationContext();
+
+        //font = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Regular.ttf");
 
         CastReceiver c = new CastReceiver() {
             @Override
@@ -116,9 +148,63 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         actionBar.setBackgroundDrawable(new ColorDrawable(
                 android.R.color.transparent));*/
 
-        RelativeLayout mainLayout;
-        mainLayout = new RelativeLayout(this);
+        initVars();
 
+        btnDeal.setText("Setup Game");
+        btnDeal.setOnClickListener(new  Button.OnClickListener() {
+            public void onClick(View v) {
+                createNewGame();
+            }
+        });
+
+        for (int i = 0; i < cardNumber.length; i++) {
+            //card.setHeight(CARD_HEIGHT);
+            //card.setWidth(CARD_WIDTH);
+            cardNumber[i].setVisibility(View.VISIBLE);
+            cardNumber[i].setClickable(false);
+            //card.
+            ViewGroup layout = cardNumber[i];
+            LayoutTransition layoutTransition = layout.getLayoutTransition();
+            layoutTransition.enableTransitionType(LayoutTransition.CHANGING);
+            layoutTransition.setStartDelay(LayoutTransition.CHANGING, 0);
+
+            cardNumber[i].setBackground(getResources().getDrawable(R.drawable.card_front_design));
+            handRankLabelBig[i].setVisibility(View.INVISIBLE);
+            handRankLabel[i].setVisibility(View.INVISIBLE);
+            handRankLabelUpsideDown[i].setVisibility(View.INVISIBLE);
+        }
+
+        //txtCurrentScore.setTypeface(font);
+        newDeal(btnDeal);
+
+
+    }
+
+
+    public void switchTheme(View view) {
+        //SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String theme;
+
+        TypedValue outVal = new TypedValue();
+        getTheme().resolveAttribute(R.attr.themeName, outVal, true);
+
+        if (outVal.string.equals("teal")) {
+            setTheme(R.style.AppTheme_Dark);
+            theme = "dark";
+        } else {
+            setTheme(R.style.AppTheme_Teal);
+            theme = "teal";
+        }
+
+        SharedPreferences.Editor editor = getSharedPreferences("cast.chrome.cribbage.cribbageforchromecast", MODE_PRIVATE).edit();
+        editor.putString("theme", theme);
+        editor.commit();
+
+        setContentView(R.layout.activity_primary);
+    }
+
+
+    public void initVars() {
         //procedurally generate views later
         cardNumber[0] = (RelativeLayout) findViewById(R.id.card1);
         cardNumber[1] = (RelativeLayout) findViewById(R.id.card2);
@@ -138,6 +224,11 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         handRankLabelUpsideDown[3] = (TextView) findViewById(R.id.card4rankDown);
         handRankLabelUpsideDown[4] = (TextView) findViewById(R.id.card5rankDown);
 
+        handRankLabelBig[0] = (TextView) findViewById(R.id.card1rankBig);
+        handRankLabelBig[1] = (TextView) findViewById(R.id.card2rankBig);
+        handRankLabelBig[2] = (TextView) findViewById(R.id.card3rankBig);
+        handRankLabelBig[3] = (TextView) findViewById(R.id.card4rankBig);
+        handRankLabelBig[4] = (TextView) findViewById(R.id.card5rankBig);
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
@@ -146,6 +237,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         MASTER_WIDTH = metrics.widthPixels;
         MASTER_DENSITY = metrics.density;
 
+        //add to res/dimens.xml
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) cardNumber[0].getLayoutParams();
         MASTER_TOP_PADDING = params.topMargin;
         MASTER_SIDE_PADDING = params.leftMargin;
@@ -174,23 +266,6 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         btnPlayCard = (Button) findViewById(R.id.btnPlayCard);
         btnDeal = (Button) findViewById(R.id.btnDeal);
         txtCurrentScore = (TextView) findViewById(R.id.scoreTextView);
-
-        btnDeal.setText("Setup Game");
-        btnDeal.setOnClickListener(new  Button.OnClickListener() {
-            public void onClick(View v) {
-                createNewGame();
-            }
-        });
-
-
-        for (RelativeLayout card : cardNumber) {
-            //card.setHeight(CARD_HEIGHT);
-            //card.setWidth(CARD_WIDTH);
-            card.setVisibility(View.VISIBLE);
-            card.setClickable(false);
-            //card.
-        }
-
     }
 
     public static Context getAppContext() {
@@ -213,7 +288,8 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
                 castManager.joinGame(myName);
 
-                btnDeal.setVisibility(View.INVISIBLE);
+                //btnDeal.setVisibility(View.INVISIBLE);
+                btnDeal.animate().alpha(0f).setDuration(100);
             }
         });
 
@@ -233,7 +309,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
         for (int i = 0; i < 5; i++) {
             resetFullLayout();
-            cardNumber[i].setVisibility(View.INVISIBLE);
+            cardNumber[i].setVisibility(View.VISIBLE);
         }
 
         btnDisplayCards.setVisibility(View.VISIBLE);
@@ -287,19 +363,62 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         replaceCard(selectedCard, myPosition);
         //sendCribToCast(players[myPosition][selectedCard]);
 
-        Animation slide = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.abc_slide_out_top);
+        DrawingAndAnimating.cardFlipListener animListener = new DrawingAndAnimating.cardFlipListener();
+        Animation anim1 = AnimationUtils.loadAnimation(this, R.anim.to_middle);
+        final Animation anim2 = AnimationUtils.loadAnimation(this, R.anim.from_middle);
+        //animListener.attachViews(cardNumber[selectedCard], handRankLabel[selectedCard], handRankLabelUpsideDown[selectedCard], handRankLabelBig[selectedCard], anim1, anim2, getResources(), false);
+        //anim1.setAnimationListener(animListener);
+        //anim2.setAnimationListener(animListener);
 
-        slide.setAnimationListener(new Animation.AnimationListener() {
+        final Animation slide = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_out_top);
+        slide.setInterpolator(getApplicationContext(), android.R.anim.accelerate_decelerate_interpolator);
+        slide.setDuration(400);
+
+
+        anim1.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onAnimationStart(Animation animation) {
-                // Called when the Animation starts
-            }
+            public void onAnimationStart(Animation animation) {  }
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                // Called when the Animation ended
-                // Since we are fading a View out we set the visibility
-                // to GONE once the Animation is finished
+                LayoutTransition lt = new LayoutTransition();
+                lt.disableTransitionType(LayoutTransition.DISAPPEARING);
+
+                cardNumber[selectedCard].setLayoutTransition(lt);
+                handRankLabelBig[selectedCard].setVisibility(View.INVISIBLE);
+                handRankLabel[selectedCard].setVisibility(View.INVISIBLE);
+                handRankLabelUpsideDown[selectedCard].setVisibility(View.INVISIBLE);
+                cardNumber[selectedCard].setBackground(getResources().getDrawable(R.drawable.card_front_design));
+                cardNumber[selectedCard].startAnimation(anim2);
+
+                lt.enableTransitionType(LayoutTransition.DISAPPEARING);
+                cardNumber[selectedCard].setLayoutTransition(lt);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) { }
+        });
+
+        anim2.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {  }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                cardNumber[selectedCard].startAnimation(slide);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) { }
+        });
+
+        slide.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {  }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
                 cardNumber[selectedCard].setVisibility(View.GONE);
                 for (RelativeLayout card : cardNumber) {
                     LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) card.getLayoutParams();
@@ -312,15 +431,15 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
             }
 
             @Override
-            public void onAnimationRepeat(Animation animation) {
-                // This is called each time the Animation repeats
-            }
+            public void onAnimationRepeat(Animation animation) { }
         });
 
-        cardNumber[selectedCard].startAnimation(slide);
+        cardNumber[selectedCard].clearAnimation();
+        cardNumber[selectedCard].startAnimation(anim1);
 
-        //hand[selectedCard].setVisibility(View.GONE);
-        btnDropCards.setVisibility(View.INVISIBLE);
+
+        //btnDropCards.setVisibility(View.INVISIBLE);
+        btnDropCards.animate().alpha(0f).setDuration(100);
 
         cardManager.setPlayState(true);
 
@@ -384,18 +503,64 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
             if (parts[1].equals("♣") || parts[1].equals("♠")) {
                 handRankLabel[i].setTextColor(Color.BLACK);
                 handRankLabelUpsideDown[i].setTextColor(Color.BLACK);
+                handRankLabelBig[i].setTextColor(Color.BLACK);
             }
 
             handRankLabel[i].setText(parts[0] + System.getProperty("line.separator") + parts[1]);
             handRankLabel[i].setTextSize(MASTER_SCREEN_SIZE_CATEGORY * 10);
+            //handRankLabel[i].setTypeface(font);
             handRankLabelUpsideDown[i].setText(parts[0] + System.getProperty("line.separator") + parts[1]);
             handRankLabelUpsideDown[i].setTextSize(MASTER_SCREEN_SIZE_CATEGORY * 10);
+            //handRankLabelUpsideDown[i].setTypeface(font);
+
+            String numInText;
+
+            if (parts[0].equals("A"))
+                numInText = "ACE";
+            else if (parts[0].equals("J"))
+                numInText = "JACK";
+            else if (parts[0].equals("Q"))
+                numInText = "QUEEN";
+            else if (parts[0].equals("K"))
+                numInText = "KING";
+            else
+                numInText = numberToText[Integer.parseInt(parts[0])];
+
+            String temp = "";
+
+            for (int j = 0; j < numInText.length(); j++) {
+                temp += numInText.substring(j, j + 1);
+                if (j != numInText.length() - 1)
+                    temp += System.getProperty("line.separator");
+            }
+
+            handRankLabelBig[i].setText(temp);
+
+            //handRankLabelBig[i].setTypeface(font);
+            handRankLabelBig[i].setTextSize(MASTER_SCREEN_SIZE_CATEGORY * (15 - numInText.length()));
 
             cardNumber[i].setVisibility(View.VISIBLE);
             cardNumber[i].setClickable(true);
+
+            LayoutTransition lt = new LayoutTransition();
+            lt.disableTransitionType(LayoutTransition.APPEARING);
+            cardNumber[i].setLayoutTransition(lt);
+
+            DrawingAndAnimating.cardFlipListener animListener = new DrawingAndAnimating.cardFlipListener();
+            Animation anim1 = AnimationUtils.loadAnimation(this, R.anim.to_middle);
+            Animation anim2 = AnimationUtils.loadAnimation(this, R.anim.from_middle);
+            animListener.attachViews(cardNumber[i], handRankLabel[i], handRankLabelUpsideDown[i], handRankLabelBig[i], anim1, anim2, getResources(), true);
+            anim1.setAnimationListener(animListener);
+            anim2.setAnimationListener(animListener);
+
+            cardNumber[i].clearAnimation();
+            cardNumber[i].setAnimation(anim1);
+            cardNumber[i].startAnimation(anim1);
         }
 
-        btnDisplayCards.setVisibility(View.INVISIBLE);
+        btnDisplayCards.animate().alpha(0f).setDuration(100);
+        //btnDisplayCards.setVisibility(View.INVISIBLE);
+
 
         btnDropCards.setVisibility(View.VISIBLE);
         btnDropCards.setClickable(false);
@@ -430,7 +595,7 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
             drawCurrentScore();
         } else if (canPlay) {
             btnPlayCard.setClickable(true);
-            btnPlayCard.setTextColor(Color.BLACK);
+            btnPlayCard.setTextColor(Color.WHITE);
             couldNotPlayCount = 0;
         } else {
             btnPlayCard.setClickable(false);
@@ -468,32 +633,29 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
     public void selectCard (View view) {
 
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) view.getLayoutParams();
-        Resources r = this.getResources();
-        int px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, params.bottomMargin + 10, r.getDisplayMetrics());
+
 
         if (params.topMargin == MASTER_TOP_PADDING) {
 
-            //reset card position to lower any other cards, tag current as selected, then shift up
             resetCardPosition();
             tagSelectedCard(view);
-            params = (LinearLayout.LayoutParams) view.getLayoutParams();
-            //params.topMargin = MASTER_TOP_PADDING / 2;
-            //params.bottomMargin = MASTER_TOP_PADDING / 2;
-            view.setElevation(MASTER_TOP_PADDING);
-            /*view.setLayoutParams(params);*/
 
-            animateCardMargin(true);
+            DrawingAndAnimating.animateCardMargin(true, view, getResources());
+
+            view.animate().translationZ(20f).setDuration(200);
 
             //drop button only needed prior to play; change from visibility to unclickable in future
             if (!cardManager.getPlayState()) {
                 //btnDropCards.setVisibility(View.VISIBLE);
-                btnDropCards.setTextColor(Color.BLACK);
+                btnDropCards.setTextColor(Color.WHITE);
                 btnDropCards.setClickable(true);
+                btnDropCards.animate().translationZ(10f).setDuration(200);
             }
             else {
                 //btnPlayCard.setVisibility(View.VISIBLE);
-                btnPlayCard.setTextColor(Color.BLACK);
+                btnPlayCard.setTextColor(Color.WHITE);
                 btnPlayCard.setClickable(true);
+                btnPlayCard.animate().translationZ(10f).setDuration(200);
             }
         }
         else {
@@ -502,61 +664,22 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
 
             btnDropCards.setTextColor(Color.GRAY);
             btnDropCards.setClickable(false);
+            btnDropCards.animate().translationZ(1f).setDuration(200);
 
             btnPlayCard.setTextColor(Color.GRAY);
             btnPlayCard.setClickable(false);
+            btnPlayCard.animate().translationZ(1f).setDuration(200);
 
             //btnDropCards.setVisibility(View.INVISIBLE);
             //btnPlayCard.setVisibility(View.INVISIBLE);
         }
     }
 
-    /**
-     * method to animate margins up or down for the cards;
-     * @param UpOrDown: true to animate up, false animate down
-     */
-    private void animateCardMargin(Boolean UpOrDown) {
-
-        final LinearLayout.LayoutParams tempParams = (LinearLayout.LayoutParams) cardNumber[selectedCard].getLayoutParams();
-
-        ValueAnimator topMarginAnimation, bottomMarginAnimation;
-
-        if (UpOrDown) {
-            topMarginAnimation = ValueAnimator.ofInt(MASTER_TOP_PADDING, MASTER_TOP_PADDING / 2);
-            bottomMarginAnimation = ValueAnimator.ofInt(MASTER_BOTTOM_PADDING, MASTER_TOP_PADDING / 2);
-        } else {
-            topMarginAnimation = ValueAnimator.ofInt(MASTER_TOP_PADDING / 2, MASTER_TOP_PADDING);
-            bottomMarginAnimation = ValueAnimator.ofInt(MASTER_TOP_PADDING / 2, MASTER_BOTTOM_PADDING);
-        }
-
-        topMarginAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator)
-            {
-                tempParams.topMargin = (Integer)  valueAnimator.getAnimatedValue();
-                cardNumber[selectedCard].requestLayout();
-            }
-        });
-        topMarginAnimation.setDuration(50);
-
-
-        bottomMarginAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator)
-            {
-                tempParams.bottomMargin = (Integer) valueAnimator.getAnimatedValue();
-                cardNumber[selectedCard].requestLayout();
-            }
-        });
-        bottomMarginAnimation.setDuration(50);
-
-        topMarginAnimation.start();
-        bottomMarginAnimation.start();
-    }
 
     public void drawCurrentScore() {
         txtCurrentScore.setText("Current score :" + cardManager.getCurrentScore());
     }
+
 
     /**
      * reset all card positions back to unselected state
@@ -567,8 +690,10 @@ public class PrimaryActivity extends ActionBarActivity implements ChromecastMana
         for (int i = 0; i < handCount; i++) {
             tempParams = (LinearLayout.LayoutParams) cardNumber[i].getLayoutParams();
             if (tempParams.topMargin != MASTER_TOP_PADDING) {
-                animateCardMargin(false);
-                cardNumber[i].setElevation(20);
+                DrawingAndAnimating.animateCardMargin(false, cardNumber[i], getResources());
+                //cardNumber[i].setElevation(20);
+                cardNumber[i].animate().translationZ(0f).setDuration(200);
+
                 cardNumber[i].setLayoutParams(tempParams);
             }
         }

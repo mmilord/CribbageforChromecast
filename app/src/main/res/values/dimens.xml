@@ -3,4 +3,10 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="default_padding">16dp</dimen>
+    <dimen name="button_elevation">0dp</dimen>
+    <dimen name="button_elevation_raised">15dp</dimen>
+    <dimen name="card_margin_bottom">5dp</dimen>
+    <dimen name="card_margin_top">25dp</dimen>
+    <dimen name="card_margin_bottom_shifted">20dp</dimen>
+    <dimen name="card_margin_top_shifted">10dp</dimen>
 </resources>
