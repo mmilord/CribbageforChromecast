@@ -1,10 +1,7 @@
 package cast.chrome.cribbage.cribbageforchromecast.Utils;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.util.Log;
@@ -25,11 +22,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import cast.chrome.cribbage.cribbageforchromecast.Interfaces.CastGameInterface;
 import cast.chrome.cribbage.cribbageforchromecast.Interfaces.CastReceiver;
 import cast.chrome.cribbage.cribbageforchromecast.PrimaryActivity;
 import cast.chrome.cribbage.cribbageforchromecast.R;
-import cast.chrome.cribbage.cribbageforchromecast.Utils.Scoring;
 
 /**
  * Created by milord on 08-Nov-14.

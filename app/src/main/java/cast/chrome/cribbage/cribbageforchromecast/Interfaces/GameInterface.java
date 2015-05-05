@@ -5,7 +5,7 @@ import cast.chrome.cribbage.cribbageforchromecast.Model.*;
 /**
  * Created by milord on 28-Nov-14.
  */
-public interface CastGameInterface {
+public interface GameInterface {
     public void sendJoinedGame(DealerCardManagement player);
 
     public void sendDropCard(DealerCardManagement player, Card card);

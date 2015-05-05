@@ -193,7 +193,7 @@ public class DealerCardManagement implements JSONSerializable {
     /**
      * Remove selected card from players hand
      * @param playerPosition
-     * @param replacedCard      card to be removed from hand
+     * @param replacedCard card to be removed from hand
      */
     public void replaceCard(int playerPosition, int replacedCard) {
         players[playerPosition][replacedCard] = null;
