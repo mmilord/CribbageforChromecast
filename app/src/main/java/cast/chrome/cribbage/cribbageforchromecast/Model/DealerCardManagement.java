@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import cast.chrome.cribbage.cribbageforchromecast.Interfaces.JSONSerializable;
+import cast.chrome.cribbage.cribbageforchromecast.Model.Base.Deck;
 import cast.chrome.cribbage.cribbageforchromecast.Utils.Scoring;
 
 /**

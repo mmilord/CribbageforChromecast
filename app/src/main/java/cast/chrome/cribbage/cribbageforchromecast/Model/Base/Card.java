@@ -1,4 +1,4 @@
-package cast.chrome.cribbage.cribbageforchromecast.Model;
+package cast.chrome.cribbage.cribbageforchromecast.Model.Base;
 
 import android.util.Log;
 
@@ -19,8 +19,6 @@ public class Card {
         this.cardRank = cardRank;
         this.cardSuit = cardSuit;
     }
-
-    //1877-720-5195
 
     public @Override String toString(){
         return ranksArray[cardRank] + " of " + suitsArray[cardSuit];

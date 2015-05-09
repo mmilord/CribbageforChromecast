@@ -1,5 +1,7 @@
 package cast.chrome.cribbage.cribbageforchromecast.Model;
 
+import cast.chrome.cribbage.cribbageforchromecast.Model.Base.Card;
+
 /**
  * Created by robertgross on 5/5/15.
  */

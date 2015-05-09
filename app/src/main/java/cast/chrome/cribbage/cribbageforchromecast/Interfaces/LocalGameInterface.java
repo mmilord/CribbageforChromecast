@@ -1,8 +1,7 @@
 package cast.chrome.cribbage.cribbageforchromecast.Interfaces;
 
-import org.json.JSONObject;
-
 import cast.chrome.cribbage.cribbageforchromecast.Model.*;
+import cast.chrome.cribbage.cribbageforchromecast.Model.Base.Card;
 
 /**
  * Created by milord on 28-Nov-14.
