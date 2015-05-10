@@ -133,6 +133,7 @@ limitations under the License.
 
     //Card Game Logic
     var CardGame = {
+
         Player : function(){
             var me = this;
             var hand = [];
@@ -141,6 +142,15 @@ limitations under the License.
             var id;
             var played;
             var senderId;
+            var waitingForNextRound;
+
+            this.setWaitingForNextRound = function (){
+                waitingForNextRound = arguments[0];
+            };
+
+            this.isWaitingForNextRound = function () {
+                return waitingForNextRound;
+            }
 
             this.setName = function () {
                 name = arguments[0];
@@ -282,11 +292,17 @@ limitations under the License.
             };
 
             this.draw = function (amount){
-              return akfadfkl
+                var card = cards.pop();
+                return card;
             };
 
             this.ToJSON = function () {
                 return JSON.stringify(cards);
+            };
+
+            this.removeCard = function(card){
+                var cardToRemoveIndex = cards.indexOf(card);
+                cards.slice(cardToRemoveIndex, 1);
             };
         },
 
@@ -323,7 +339,6 @@ limitations under the License.
         GameState : function() {
             var me = this;
             var players = [];
-            var activeCard = [];
             var decks = [];
             var round = 0;
             var castMessanger;
@@ -371,12 +386,13 @@ limitations under the License.
             };
 
             this.onReceivedReadyForNewRound = function (senderId, message) {
-                getPlayerFromSenderId(senderId).setPlayed(false);
+                var player = getPlayerFromSenderId(senderId).setPlayed(false);
+                player.setWaitingForNextRound(true);
 
                 var countOfReadyPlayers = 0;
 
                 for(var i = 0; i < players.length; i++)
-                    if(players[i].hasPlayed())
+                    if(players[i].hasPlayed() && player[i].isWaitingForNextRound())
                         countOfReadyPlayers++;
 
                 if(countOfReadyPlayers == players.length)
@@ -387,7 +403,29 @@ limitations under the License.
             this.onReceivedPlayedCard = function (senderId, message) {
                 var lastPlayer = getPlayerFromSenderId(senderId);
                 lastPlayer.setPlayed(true);
-                castMessanger.sendIsPlayersTurn(gameType.nextPlayer(players, lastPlayer).getSenderId());
+
+                var cardPlayed = new CardGame.Card(message["card"]);
+                var countOfReadyPlayers = 0;
+                var shouldSendEndOfRoundMessage = false;
+
+                for (var i = 0; i < players.length; i++)
+                    if (players[i].hasPlayed())
+                        countOfReadyPlayers++;
+
+
+                if (countOfReadyPlayers == players.length) {
+                    shouldSendEndOfRoundMessage = true;
+                }
+
+                else
+                    castMessanger.sendIsPlayersTurn(gameType.nextPlayer(players, lastPlayer).getSenderId());
+
+
+                for(var i = 0; i < players.length; i++){
+                    if(shouldSendEndOfRoundMessage) castMessanger.sendEndRound(senderId);
+                    castMessanger.sendCardPlayed(players[i], lastPlayer, cardPlayed);
+
+                }
             };
 
             this.onReceivedChangedColor = function (senderId, message) {
@@ -436,8 +474,10 @@ limitations under the License.
                 message["starting_player"] = gameType.startingPlayer().getPlayerId();
                 message["current_round"] = round;
 
-                for (var i = 0; i < players.length; i++)
+                for (var i = 0; i < players.length; i++){
                     castMessanger.sendNewRound(players[i].getSenderId(), JSON.stringify(message));
+                    castMessanger.sendDeck(players[i].getSenderId(), decks);
+                }
             }
             function getPlayerFromSenderId(senderId) {
                 for (var i = 0; i < players.length; i++)
@@ -576,7 +616,10 @@ limitations under the License.
 
             this.sendDeck = function (senderId, deck) {
                 var jsonReturn = easyJSON("deck_for_round");
-                jsonReturn["deck"] = deck.ToJSON();
+                var arrayToSend = [];
+                for(var i = 0; i < deck.length; i++)
+                    arrayToSend.push(deck[i].ToJSON());
+                jsonReturn["decks"] = JSON.stringify(arrayToSend);
                 window.messageBus.send(senderId, JSON.stringify(jsonReturn));
             };
 
@@ -777,22 +820,23 @@ limitations under the License.
                 document.body.insertBefore(div4, currentDiv);
 
                 console.log('Pre-Run');*/
+                console.log("Visual Init");
             };
 
             this.playerJoined = function (playerName){
-
+                console.log("Visual playerJoined " + playerName);
             };
 
-            this.cardPlayed = function (cardStrin){
-
+            this.cardPlayed = function (cardString){
+                console.log("Visual playerJoined " + cardString);
             };
 
             this.playerChangedColor = function (color){
-
+                console.log("Visual playerChangedColor " + color);
             };
 
             this.playerChangedName = function (name){
-
+                console.log("Visual playerChangedColor " + name);
             };
         },
 
@@ -827,8 +871,8 @@ limitations under the License.
         };
         var CrazyEightGameState = function () {
             CardGame.GameState.apply();
-
             var me = this;
+            var activeCard = [];
 
             this.onReceivedStartGame = function (senderId, message) {
                 gameHasStarted = true;
@@ -840,10 +884,38 @@ limitations under the License.
                 playerAskingForCard.addCardsToHand(cardDrawn);
                 castMessanger.sendCardDrawn(senderId, cardDrawn.ToJSON());
             };
+            this.onReceivedPlayedCard = function (senderId, message) {
+                var lastPlayer = getPlayerFromSenderId(senderId);
+                lastPlayer.setPlayed(true);
+
+                var cardPlayed = new CardGame.Card(message["card"]);
+                activeCard.push(cardPlayed);
+                var countOfReadyPlayers = 0;
+                var shouldSendEndOfRoundMessage = false;
+
+                for (var i = 0; i < players.length; i++)
+                    if (players[i].hasPlayed())
+                        countOfReadyPlayers++;
+
+
+                if (countOfReadyPlayers == players.length) {
+                    shouldSendEndOfRoundMessage = true;
+                }
+
+                else
+                    castMessanger.sendIsPlayersTurn(gameType.nextPlayer(players, lastPlayer).getSenderId());
+
+
+                for(var i = 0; i < players.length; i++){
+                    if(shouldSendEndOfRoundMessage) castMessanger.sendEndRound(senderId);
+                    castMessanger.sendCardPlayed(players[i], lastPlayer, cardPlayed);
+
+                }
+            };
             this.initCrazyEights = function (visualCardGame) {
                 var thisCastMessanger = new CrazyEightCastMessenger();
                 me.init(thisCastMessanger, visualCardGame);
-            }
+            };
             function startNewRound() {
                 decks = new Array(1);
                 decks[0] = new CardGame.Deck();
@@ -866,6 +938,7 @@ limitations under the License.
                 message["starting_player"] = gameType.startingPlayer().getPlayerId();
                 message["current_round"] = round;
                 var firstCard = decks[0].draw(1);
+                activeCard.push(firstCard);
                 message["starting_card"] = firstCard.ToJSON();
 
                 visualManager.cardPlayed(firstCard.prettyString());
