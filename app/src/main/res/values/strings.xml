@@ -7,6 +7,7 @@
     <string name="namespace">urn:x-cast:cast.chrome.cribbage.cribbageforchromecast</string>
     <string name="app_id">578D3896</string>
     <string name="media_route_menu_title">Play on&#8230;</string>
+    <string name="title_activity_crazy_eights">CrazyEightsActivity</string>
 
 
 </resources>

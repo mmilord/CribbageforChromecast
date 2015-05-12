@@ -13,6 +13,7 @@ public class Card {
 
     private static String[] suitsArray = { "♠", "♥", "♦", "♣" };
     private static String[] ranksArray  = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
+    private static int ordinal;
 
     public Card(int cardSuit, int cardRank)
     {

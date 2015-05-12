@@ -31,3 +31,5 @@ local.properties
 *.ipr
 *~
 *.swp 
+.idea/misc.xml
+CribbageforChromecast.iml
