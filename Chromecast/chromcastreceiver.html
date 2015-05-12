@@ -1,10 +1,605 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
+<head>
+    <title>BibtexParser Test Runner</title>
+
+    <script type="text/javascript">
+        window.onload = function() {
+            var CardGame = {
+
+                Player : function(){
+                    var me = this;
+                    var hand = [];
+                    var color;
+                    var name;
+                    var id;
+                    var played;
+                    var senderId;
+                    var waitingForNextRound;
+
+                    this.setWaitingForNextRound = function (){
+                        waitingForNextRound = arguments[0];
+                    };
+
+                    this.isWaitingForNextRound = function () {
+                        return waitingForNextRound;
+                    }
+
+                    this.setName = function () {
+                        name = arguments[0];
+                    };
+
+                    this.setPlayed = function () {
+                        name = arguments[0];
+                    };
+
+                    this.hasPlayed = function(){
+                        return played;
+                    }
+
+                    this.setColor = function () {
+                        color = arguments[0];
+                    };
+
+                    this.getColor = function(){
+                        return color;
+                    };
+
+                    this.playCard = function (card) {
+                        var idx = hand.indexOf(card);
+                        if (idx !== -1) {
+                            hand.splice(idx, 1);
+                        }
+                    };
+
+                    this.addCardToHand = function () {
+                        hand.push(arguments[0]);
+                    };
+
+                    this.addCardsToHand = function () {
+                        Array.prototype.push.apply(hand, arguments[0]);
+                    };
+
+                    this.handToJSON = function () {
+                        return JSON.stringify(cards);
+                    };
+
+                    this.getSenderId = function () {
+                        return senderId;
+                    };
+
+                    this.getPlayerId = function () {
+                        return id;
+                    };
+
+                    this.getName = function(){
+                        return name;
+                    }
+
+                    this.ToJSON = function () {
+                        var obj = {};
+                        obj["name"] = name;
+                        obj["color"] = color;
+                        obj["id"] = id;
+                    };
+
+                    function init(json, id, sendId) {
+                        color = json["color"];
+                        name = json["name"];
+                        me.id = id;
+                        me.senderId = sendId;
+                    }
+
+                    this.init(arguments[0], arguments[1], arguments[2]);
+                },
+
+                Card : function() {
+
+                    var suits = ["♠", "♥", "♦", "♣"];
+                    var ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+
+                    var me = this;
+                    var suit;
+                    var rank;
+                    var ordinal;
+
+                    this.ToJSON = function () {
+                        return JSON.stringify(ordinal);
+                    };
+
+                    this.initFromOrdinal = function (ordinal) {
+                        var ordinalOffset;
+                        me.ordinal = ordinal;
+
+                        if (ordinal > 0 && ordinal <= 13) {
+                            ordinalOffset = 0;
+                            suit = suits[ordinalOffset];
+                            rank = ranks[ordinal - (13 * ordinalOffset)];
+                        }
+                        else if (ordinal > 13 && ordinal <= 26) {
+                            ordinalOffset = 1;
+                            suit = suits[ordinalOffset];
+                            rank = ranks[ordinal - (13 * ordinalOffset)];
+                        }
+                        else if (ordinal > 26 && ordinal <= 39) {
+                            ordinalOffset = 2;
+                            suit = suits[ordinalOffset];
+                            rank = ranks[ordinal - (13 * ordinalOffset)];
+                        }
+                        else if (ordinal > 39 && ordinal <= 52) {
+                            ordinalOffset = 3;
+                            suit = suits[ordinalOffset];
+                            rank = ranks[ordinal - (13 * ordinalOffset)];
+                        }
+
+                    };
+
+                    this.prettyString = function(){ return (rank + suit); };
+
+                    me.initFromOrdinal(arguments[0]);
+
+                },
+
+                Deck : function() {
+                    var cards = [];
+                    var me = this;
+                    var rand = new CardGame.MilordRandom();
+
+                    this.doubleShuffle = function () {
+                        me.shuffle();
+                        me.shuffle();
+                    };
+
+                    this.shuffle = function () {
+                        cards = new Array(52);
+
+                        for (var i = 0; i < 52; i++)
+                            cards[i] = new CardGame.Card(i);
+
+                        for (var i = cards.Length - 1; i > 0; i--) {
+                            var n = rand.Next(i + 1);
+                            var temp = cards[i];
+                            cards[i] = cards[n];
+                            cards[n] = temp;
+                        }
+                    };
+
+                    this.draw = function (amount){
+                        var card = cards.pop();
+                        return card;
+                    };
+
+                    this.ToJSON = function () {
+                        return JSON.stringify(cards);
+                    };
+
+                    this.removeCard = function(card){
+                        var cardToRemoveIndex = cards.indexOf(card);
+                        cards.slice(cardToRemoveIndex, 1);
+                    };
+                },
+
+                Game : function() {
+                    var name;
+                    this.getName = function () { return name; };
+                    this.setName = function () { name = arguments[0]; };
+                    this.startingPlayer = function(players) {
+                        getPlayerFromId(0);
+                    };
+                    this.nextPlayer = function(players, playerId) {
+                        var tempId = playerId + 1;
+
+                        if(playerId >= players.length)
+                            return getPlayerFromId(0);
+                        else
+                            return getPlayerFromId(tempId);
+                    };
+                    this.getHandSize = function() {
+                        return 5;
+                    };
+
+                    function getPlayerFromId(players, id){
+                        for (var i = 0; i < players.length; i++)
+                            if (players[i] == id)
+                                return players[i];
+                    }
+                    function init(gameName){
+                        name = gameName;
+                    }
+                    init(arguments[0]);
+                },
+
+                GameState : function() {
+                    var me = this;
+                    var players = [];
+                    var decks = [];
+                    var round = 0;
+                    var castMessanger;
+                    var gameHasStarted;
+                    var gameType;
+                    var visualManager;
+
+                    this.getIdSender = function (senderId) {
+                        return (getPlayerFromSenderId(senderId).getPlayerId());
+                    };
+
+                    this.getGameTypeName = function () {
+                        return gameType.getName;
+                    };
+
+                    this.getCastMessenger = function () {
+                        return castMessanger;
+                    };
+
+                    this.onReceivedJoin = function (senderId, message) {
+                        if (!gameHasStarted) {
+
+                            if (gameType == null)
+                                setGameType(message["gameType"]);
+
+                            var player = new CardGame.Player(message["player"], players.length, senderId);
+
+                            if (players.length < 0)
+                                for (var i = 0; i < players.length; i++)
+                                    castMessanger.sendPlayerJoined(players[i].getSenderId, player);
+
+                            visualManager.playerJoined(player.getName());
+                            castMessanger.sendPlayerList(senderId, players);
+                            players.push(player);
+                        }
+                    };
+
+                    this.onReceivedStartGame = function (senderId, message) {
+                        gameHasStarted = true;
+                        startNewRound();
+                    };
+
+                    this.onReceivedEndGame = function (senderId, message) {
+                        alert("Game Ended");
+                    };
+
+                    this.onReceivedReadyForNewRound = function (senderId, message) {
+                        var player = getPlayerFromSenderId(senderId).setPlayed(false);
+                        player.setWaitingForNextRound(true);
+
+                        var countOfReadyPlayers = 0;
+
+                        for(var i = 0; i < players.length; i++)
+                            if(players[i].hasPlayed() && player[i].isWaitingForNextRound())
+                                countOfReadyPlayers++;
+
+                        if(countOfReadyPlayers == players.length)
+                            startNewRound();
+
+                    };
+
+                    this.onReceivedPlayedCard = function (senderId, message) {
+                        var lastPlayer = getPlayerFromSenderId(senderId);
+                        lastPlayer.setPlayed(true);
+
+                        var cardPlayed = new CardGame.Card(message["card"]);
+                        var countOfReadyPlayers = 0;
+                        var shouldSendEndOfRoundMessage = false;
+
+                        for (var i = 0; i < players.length; i++)
+                            if (players[i].hasPlayed())
+                                countOfReadyPlayers++;
+
+
+                        if (countOfReadyPlayers == players.length) {
+                            shouldSendEndOfRoundMessage = true;
+                        }
+
+                        else
+                            castMessanger.sendIsPlayersTurn(gameType.nextPlayer(players, lastPlayer).getSenderId());
+
+
+                        for(var i = 0; i < players.length; i++){
+                            if(shouldSendEndOfRoundMessage) castMessanger.sendEndRound(senderId);
+                            castMessanger.sendCardPlayed(players[i], lastPlayer, cardPlayed);
+
+                        }
+                    };
+
+                    this.onReceivedChangedColor = function (senderId, message) {
+                        getPlayerFromSenderId(senderId).setColor(message["color"]);
+                        visualManager.playerChangedColor(player.getColor());
+                    };
+
+                    this.onReceivedChangedName = function (senderId, message) {
+                        getPlayerFromSenderId(senderId).setName(message["name"]);
+                        visualManager.playerChangedName(player.getName());
+                    };
+
+                    this.init = function(gameCastMessanger, gameVisualManager) {
+                        if(arguments.length == 0) {
+                            castMessanger = new CardGame.CastMessenger();
+                            visualManager = new CardGame.VisualManager();
+                        }
+                        else{
+                            castMessanger = gameCastMessanger;
+                            visualManager = gameVisualManager;
+                        }
+
+                        gameHasStarted = false;
+                        round = 0;
+                    }
+
+                    function startNewRound(){
+                        decks = new Array(1);
+                        decks[0] = new CardGame.Deck();
+                        decks[0].doubleShuffle();
+                        round++;
+
+                        var message = {};
+
+                        var arrayOfPlayers = [];
+
+                        for (var i = 0; i < players.length; i++) {
+                            players[i].addCardsToHand(decks[0].draw(gameType.getHandSize()));
+                            var obj = {};
+                            obj["id"] = players[i].id;
+                            obj["hand"] = players[i].handToJSON();
+                            arrayOfPlayers.push(JSON.stringify(obj));
+                        }
+
+                        message["players"] = JSON.stringify(arrayOfPlayers);
+                        message["starting_player"] = gameType.startingPlayer().getPlayerId();
+                        message["current_round"] = round;
+
+                        for (var i = 0; i < players.length; i++){
+                            castMessanger.sendNewRound(players[i].getSenderId(), JSON.stringify(message));
+                            castMessanger.sendDeck(players[i].getSenderId(), decks);
+                        }
+                    }
+                    function getPlayerFromSenderId(senderId) {
+                        for (var i = 0; i < players.length; i++)
+                            if (players[i].getSenderId() == senderId)
+                                return (players[i]);
+                    }
+                    function setGameType(gameTypeName) {
+                        if(gameTypeName == "crazy8")
+                            gameType = new CardGame.CrazyEightsGame("Crazy Eights");
+                    }
+                },
+
+                CastReceiver : function() {
+                    var gameState;
+                    var me = this;
+
+                    this.init = function(masterGameState) {
+                        gameState = masterGameState;
+
+                        window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
+                        console.log('Starting Receiver Manager');
+
+                        // handler for the 'ready' event
+                        castReceiverManager.onReady = function (event) {
+                            console.log('Received Ready event: ' + JSON.stringify(event.data));
+                            window.castReceiverManager.setApplicationState("Application status is ready...");
+                        };
+
+                        // handler for 'senderconnected' event sends back game type if it has been set
+                        castReceiverManager.onSenderConnected = function (event) {
+                            console.log('Received Sender Connected event: ' + event.data);
+                            console.log(window.castReceiverManager.getSender(event.data).userAgent);
+                            if (!(gameState.getGameTypeName() == null))
+                                gameState.getCastMessenger().sendGameType(event.senderId, gameState.getGameTypeName());
+                        };
+
+                        // handler for 'senderdisconnected' event
+                        castReceiverManager.onSenderDisconnected = function (event) {
+                            console.log('Received Sender Disconnected event: ' + event.data);
+                            if (window.castReceiverManager.getSenders().length == 0) {
+                                window.close();
+                            } else {
+                                var disconnectedID = gameState.getIdSender(event.senderId);
+                                for (var i = 0; i < window.castReceiverManager.getSenders().length; i++) {
+                                    gameState.getCastMessenger().sendPlayerDisconnected(window.castReceiverManager.getSenders()[i], disconnectedID);
+                                }
+                            }
+                        };
+
+                        // handler for 'systemvolumechanged' event
+                        castReceiverManager.onSystemVolumeChanged = function (event) {
+                            console.log('Received System Volume Changed event: ' + event.data['level'] + ' ' +
+                                    event.data['muted']);
+                        };
+
+                        // create a CastMessageBus to handle messages for a custom namespace
+                        window.messageBus = window.castReceiverManager.getCastMessageBus('urn:x-cast:cast.chrome.cribbage.cribbageforchromecast');
+
+                        // initialize the CastReceiverManager with an application status message
+                        window.castReceiverManager.start({statusText: "Application is starting"});
+                        console.log('Receiver Manager started');
+                        cast.receiver.logger.setLevelValue(0);
+                    };
+
+                    this.setUpMessageReceived = function(){
+                        // handler for the CastMessageBus message event
+                        window.messageBus.onMessage = function (event) {
+                            console.log('Message [' + event.senderId + ']: ' + JSON.stringify(event.data));
+
+                            var message = JSON.parse(event.data);
+                            var senderId = event.senderId;
+                            me.testMessageReceived(senderId, message);
+                        };
+                    };
+
+                    this.testMessageReceived = function(senderId, message){
+                        console.log('Message post-break [' + senderId + ']: ' + message);
+
+                        // inform all senders on the CastMessageBus of the incoming message event
+                        // sender message listener will be invoked
+                        //window.messageBus.send(event.senderId, event.data);
+
+                        if (message.command == 'join') {
+                            gameState.onReceivedJoin(senderId, message);
+                        } else if (message.command == 'start_game') {
+                            gameState.onReceivedStartGame(senderId, message);
+                        } else if (message.command == 'end_game') {
+                            gameState.onReceivedEndGame(senderId, message);
+                        } else if (message.command == 'ready_set_new_round') {
+                            gameState.onReceivedReadyForNewRound();
+                        } else if (message.command == 'play_card') {
+                            gameState.onReceivedPlayedCard(senderId, message);
+                        } else if (message.command == 'change_color') {
+                            gameState.onReceivedChangedColor(senderId, message);
+                        } else if (message.command == 'change_name') {
+                            gameState.onReceivedChangedName(senderId, message);
+                        } else {
+                            console.log('invalid command message: ' + message.command);
+                            return false;
+                        }
+
+                        return true;
+                    };
+                },
+
+                CastMessenger : function() {
+
+                    this.sendPlayerJoined = function (senderId, player) {
+                        var jsonReturn = easyJSON("player_joined");
+                        jsonReturn["player"] = player.ToJSON();
+                        window.messageBus.send(senderId, JSON.stringify(jsonReturn));
+                    };
+
+                    this.sendGameType = function (senderId, gameType) {
+                        var jsonReturn = easyJSON("gametype");
+                        jsonReturn["gameType"] = gameType;
+                        window.messageBus.send(senderId, JSON.stringify(jsonReturn));
+                    };
+
+                    this.sendPlayerList = function (senderId, players) {
+                        var jsonReturn = easyJSON("players_in_game");
+                        var arrayOfPlayers = [];
+
+                        for (var i = 0; i < players.length; i++)
+                            arrayOfPlayers.push(players[i].ToJSON());
+
+                        jsonReturn["players"] = JSON.stringify(arrayOfPlayers);
+                        window.messageBus.send(senderId, JSON.stringify(jsonReturn));
+                    };
+
+                    this.sendNewRound = function (senderId, message) {
+                        var jsonReturn = easyJSON("player_joined");
+                        jsonReturn["round"] = message;
+                        window.messageBus.send(senderId, JSON.stringify(jsonReturn));
+                    };
+
+                    this.sendDeck = function (senderId, deck) {
+                        var jsonReturn = easyJSON("deck_for_round");
+                        var arrayToSend = [];
+                        for(var i = 0; i < deck.length; i++)
+                            arrayToSend.push(deck[i].ToJSON());
+                        jsonReturn["decks"] = JSON.stringify(arrayToSend);
+                        window.messageBus.send(senderId, JSON.stringify(jsonReturn));
+                    };
+
+                    this.sendCardPlayed = function (senderId, playerId, card) {
+                        var jsonReturn = easyJSON("card_played");
+                        jsonReturn["card"] = card.ToJSON();
+                        jsonReturn["playerId"] = playerId;
+                        window.messageBus.send(senderId, JSON.stringify(jsonReturn));
+                    };
+
+                    this.sendPlayerDisconnected = function (senderId, disconnectedId) {
+                        var jsonReturn = easyJSON("player_disconnected");
+                        jsonReturn["playerId"] = disconnectedId;
+                        window.messageBus.send(senderId, JSON.stringify(jsonReturn));
+                    };
+
+                    this.sendIsPlayersTurn = function (senderId) {
+                        var jsonReturn = easyJSON("player_turn");
+                        window.messageBus.send(senderId, JSON.stringify(jsonReturn));
+                    };
+
+                    this.sendEndRound = function (senderId) {
+                        var jsonReturn = easyJSON("round_over");
+                        window.messageBus.send(senderId, JSON.stringify(jsonReturn));
+                    };
+
+                    this.sendEndGame = function (senderId, winnerId) {
+                        var jsonReturn = easyJSON("game_over");
+                        jsonReturn["winnder"] = winnerId;
+                        window.messageBus.send(senderId, JSON.stringify(jsonReturn));
+                    };
+
+                    this.getBasicJSON = function (commandName) {
+                        return easyJSON(commandName);
+                    };
+
+                    function easyJSON(commandName) {
+                        var easyJSONObject = {};
+                        easyJSONObject["command"] = commandName;
+                        return easyJSONObject;
+                    }
+
+                },
+
+                VisualManager : function() {
+
+                    this.init = function () {
+                       console.log("Visual Init");
+                    };
+
+                    this.playerJoined = function (playerName){
+                        alert(playerName);
+                        console.log("Visual playerJoined " + playerName);
+                    };
+
+                    this.cardPlayed = function (cardString){
+                        alert(cardString);
+                        console.log("Visual playerJoined " + cardString);
+                    };
+
+                    this.playerChangedColor = function (color){
+                        alert(color);
+                        console.log("Visual playerChangedColor " + color);
+                    };
+
+                    this.playerChangedName = function (name){
+                        alert(name);
+                        console.log("Visual playerChangedColor " + name);
+                    };
+                },
+
+                MilordRandom : function() {
+
+                    this.Next = function (max) {
+                        var min = 0;
+                        // Create byte array and fill with 1 random number
+                        var byteArray = new Uint8Array(1);
+                        window.crypto.getRandomValues(byteArray);
+
+                        var range = max - min + 1;
+                        var max_range = 256;
+                        if (byteArray[0] >= Math.floor(max_range / range) * range)
+                            return getRandomInt(min, max);
+                        return min + (byteArray[0] % range);
+                    }
+                }
+            };
+
+            document.getElementById("button").addEventListener("click", function () {
+                var message = {};
+                message["command"] = "join";
+                var me = new CardGame.Player();
+                me.setColor("yellow");
+                me.setName("Robert Gross");
+
+                
+
+            });
+        }
+    </script>
+
 </head>
+
 <body>
+<input type="text" id="bibField"/>
+<button id="button">Click me</button>
 
 </body>
 </html>
