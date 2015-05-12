@@ -544,6 +544,8 @@ limitations under the License.
 
             this.setUpMessageReceived = function(){
                 // handler for the CastMessageBus message event
+
+                alert("Recieve Setup Inited");
                 window.messageBus.onMessage = function (event) {
                     console.log('Message [' + event.senderId + ']: ' + JSON.stringify(event.data));
 
@@ -820,6 +822,38 @@ limitations under the License.
                 document.body.insertBefore(div4, currentDiv);
 
                 console.log('Pre-Run');*/
+                alert("APP Inited");
+                var div = document.createElement("asdf");
+                div.innerHTML = "10<br>C";
+                div.className = "card cardPlayerOne";
+                //div.style.transform = 'rotate(' + 40 + 'deg)';
+                var currentDiv = document.getElementById("main");
+                document.body.insertBefore(div, currentDiv);
+
+                var div2 = document.createElement("aaa");
+                div2.innerHTML = "8<br>C";
+                div2.className = "card cardPlayerOne";
+                div2.style.transform = 'rotate(' + 20 + 'deg)';
+                div2.style.top = 35 + "px";
+                div2.style.left = 20 + "px";
+                document.body.insertBefore(div2, currentDiv);
+
+                var div3 = document.createElement("fdsa");
+                div3.innerHTML = "3<br>D";
+                div3.className = "card cardPlayerTwo";
+                //div3.style.transform = 'rotate(' + 20 + 'deg)';
+                document.body.insertBefore(div3, currentDiv);
+
+                var div4 = document.createElement("adsdfs");
+                div4.innerHTML = "9<br>S";
+                div4.className = "card cardPlayerOne";
+                var currentPosition = parseInt(div4.style.top);
+                div4.style.transform = 'rotate(' + 35 + 'deg)';
+                div4.style.top = 70 + "px";
+                div4.style.left = 35 + "px";
+                document.body.insertBefore(div4, currentDiv);
+                document.getElementById('playScore').innerText = "Current Count: " + "inited";
+
                 console.log("Visual Init");
             };
 
