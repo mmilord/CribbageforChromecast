@@ -861,20 +861,25 @@ limitations under the License.
         }
     };
 
+    function parasiticInheirtance(parent, child, args){
+        var _parent = new parent(args);
+        for(item in _parent)
+            child[item] = _parent[item];
+    };
+
     //Crazy Eight Game Logic
     {
         var CrazyEightVisualManager = function () {
-            CardGame.VisualManager.apply();
-
+            parasiticInheirtance(CardGame.VisualManager, this, {});
         };
         var CrazyEightGame = function () {
-            CardGame.Game.apply(arguments);
+            parasiticInheirtance(CardGame.Game, this, arguments);
             this.getHandSize = function () {
                 return 7;
             };
         };
         var CrazyEightGameState = function () {
-            CardGame.GameState.apply();
+            parasiticInheirtance(CardGame.GameState, this, {});
             var me = this;
             var activeCard = [];
 
@@ -952,7 +957,7 @@ limitations under the License.
             }
         };
         var CrazyEightCastMessenger = function () {
-            CardGame.CastMessenger.apply();
+            parasiticInheirtance(CardGame.CastMessenger, this, {});
 
             this.sendCardDrawn = function (senderId, cardDrawn) {
                 var jsonReturn = easyJSON("card_drawn");
@@ -968,7 +973,7 @@ limitations under the License.
         var CrazyEightCastReceiver = function () {
             var crazyEightGameState = arguments[0];
             var castReceiver = new CardGame.CastReceiver();
-            castReceiver.init(gameState);
+            castReceiver.init(crazyEightGameState);
             var me = this;
 
             this.setUpMessageReceived = function () {
