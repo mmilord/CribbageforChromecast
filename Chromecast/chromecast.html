@@ -560,7 +560,7 @@ limitations under the License.
 
                 // inform all senders on the CastMessageBus of the incoming message event
                 // sender message listener will be invoked
-                //window.messageBus.send(event.senderId, event.data);
+                window.messageBus.send(senderId, message);
 
                 if (message.command == 'join') {
                     gameState.onReceivedJoin(senderId, message);
