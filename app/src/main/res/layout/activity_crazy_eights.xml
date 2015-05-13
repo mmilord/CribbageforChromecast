@@ -31,6 +31,30 @@
             android:layout_weight=".7"
             android:background="?attr/colorSecondary"
             android:elevation="3dp">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="join game"
+                android:id="@+id/button2"
+                android:layout_gravity="center_vertical"
+                android:onClick="joinGame" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="start game"
+                android:id="@+id/button3"
+                android:layout_gravity="center_vertical"
+                android:onClick="startGame" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="change name"
+                android:id="@+id/button4"
+                android:layout_gravity="center_vertical"
+                android:onClick="changeName" />
         </LinearLayout>
 
         <LinearLayout

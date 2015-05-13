@@ -22,4 +22,5 @@ public final class SendKeys {
     public static final String NAME = "name";
     public static final String JOIN = "join";
     public static final String START_GAME = "start";
+    public static final String GAME_TYPE = "gameType";
 }

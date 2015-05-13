@@ -9,6 +9,7 @@ import android.support.v7.app.MediaRouteActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import cast.chrome.cribbage.cribbageforchromecast.R;
 
@@ -90,5 +91,17 @@ public class CrazyEightsActivity extends ActionBarActivity {
             case RESULT_SETTINGS:
                 break;
         }
+    }
+
+    public void joinGame (View view) {
+        gameState.JoinGame();
+    }
+
+    public void startGame (View view) {
+        gameState.StartGame(3);
+    }
+
+    public void changeName (View view) {
+        gameState.ChangeName("new name lalala");
     }
 }

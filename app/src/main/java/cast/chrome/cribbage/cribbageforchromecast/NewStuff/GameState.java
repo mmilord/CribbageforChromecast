@@ -49,7 +49,7 @@ public class GameState implements CastToGSListener {
     }
 
     public void JoinGame () {
-        chromecastControl.sendMessage(JSONHandler.PackageGenericJson(SendKeys.JOIN).toString());
+        chromecastControl.sendMessage(JSONHandler.PackageGenericJson(SendKeys.JOIN, SendKeys.GAME_TYPE, "crazy8").toString());
     }
 
     public void StartGame (int numberOfPlayers) {

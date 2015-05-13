@@ -141,6 +141,7 @@ public class ChromecastControl extends MediaRouter.Callback implements GoogleApi
      * @param message
      */
     public void sendMessage(String message) {
+        Log.d(TAG, "sendMessage: " + message);
         if (mApiClient != null && mChromecastManagementChannel != null) {
             try {
                 Cast.CastApi.sendMessage(mApiClient,
