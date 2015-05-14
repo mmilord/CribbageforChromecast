@@ -21,23 +21,60 @@
         tools:ignore="UnusedAttribute" />
 
     <LinearLayout
+        android:id="@+id/color_container"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical">
-
         <LinearLayout
+            android:id="@+id/upper_color_layout"
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_weight=".7"
             android:background="?attr/colorSecondary"
             android:elevation="3dp">
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/lower_color_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".3"
+            android:background="?attr/colorPrimary"
+            android:elevation="1dp">
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/master_container"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/card_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".8"
+            android:paddingTop="?android:attr/actionBarSize"
+            android:paddingBottom="15dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/button_container"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".15"
+            android:elevation="2dp">
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="join game"
                 android:id="@+id/button2"
-                android:layout_gravity="center_vertical"
                 android:onClick="joinGame" />
 
             <Button
@@ -45,7 +82,6 @@
                 android:layout_height="wrap_content"
                 android:text="start game"
                 android:id="@+id/button3"
-                android:layout_gravity="center_vertical"
                 android:onClick="startGame" />
 
             <Button
@@ -53,23 +89,9 @@
                 android:layout_height="wrap_content"
                 android:text="change name"
                 android:id="@+id/button4"
-                android:layout_gravity="center_vertical"
                 android:onClick="changeName" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight=".3"
-            android:background="?attr/colorPrimary"
-            android:elevation="1dp">
 
         </LinearLayout>
-
     </LinearLayout>
-
-
-    <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
 
 </RelativeLayout>
