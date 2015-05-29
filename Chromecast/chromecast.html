@@ -108,6 +108,7 @@ limitations under the License.
       var CardGame = {
     
           Player : function(){
+            //Vars
               var me = this;
               var hand = [];
               var color;
@@ -117,41 +118,31 @@ limitations under the License.
               var senderId;
               var waitingForNextRound;
     
-              this.setWaitingForNextRound = function (){
-                  waitingForNextRound = arguments[0];
-              };
+            //Properties
+              this.setHand = function() { hand = arguments[0]; };
+              this.getHand = function() { return hand; };
+              this.setColor = function() { color = arguments[0]; };
+              this.getColor = function() { return color; };
+              this.setName = function() { name = arguments[0]; };
+              this.getName = function() { return name; };
+              this.setPlayerId = function() { id = arguments[0]; };
+              this.getPlayerId = function() { return id; };
+              this.setPlayed = function() { name = arguments[0]; };
+              this.hasPlayed = function() { return played; };
+              this.setSenderId = function() { senderId = arguments[0]; };
+              this.getSenderId = function () { return senderId; };
+              this.setWaitingForNextRound = function() { waitingForNextRound = arguments[0]; };
+              this.isWaitingForNextRound = function() { return waitingForNextRound; };
     
-              this.isWaitingForNextRound = function () {
-                  return waitingForNextRound;
-              }
     
-              this.setName = function () {
-                  name = arguments[0];
-              };
-    
-              this.setPlayed = function () {
-                  name = arguments[0];
-              };
-    
-              this.hasPlayed = function(){
-                  return played;
-              }
-    
-              this.setColor = function () {
-                  color = arguments[0];
-              };
-    
-              this.getColor = function(){
-                  return color;
-              };
-    
+            //Methods
               this.playCard = function (card) {
                   var idx = hand.indexOf(card);
                   if (idx !== -1) {
                       hand.splice(idx, 1);
                   }
               };
-    
+
               this.addCardToHand = function () {
                   hand.push(arguments[0]);
               };
@@ -170,18 +161,6 @@ limitations under the License.
                 return JSON.stringify(cardStringArray);
               };
     
-              this.getSenderId = function () {
-                  return senderId;
-              };
-    
-              this.getPlayerId = function () {
-                  return id;
-              };
-    
-              this.getName = function(){
-                  return name;
-              }
-    
               this.ToJSON = function () {
                   var obj = {};
                   obj["name"] = name;
@@ -189,7 +168,7 @@ limitations under the License.
                   obj["id"] = id;
               };
     
-              this.init = function(json, idFromSystem, sendId) {
+              this.init = function (json, idFromSystem, sendId) {
                 console.log("color");
                 
                 if(typeof json !== "undefined" && typeof json["color"] !== "undefined") color = json["color"];
@@ -310,20 +289,16 @@ limitations under the License.
           Game : function() {
               var name;
               var lastPlayerId = 0;
-              this.getName = function () { return name; };
-              this.setName = function () { name = arguments[0]; };
-              this.startingPlayer = function(players) {
+              
+              this.setName = function() { name = arguments[0]; };
+              this.getName = function() { return name; };
+              this.setLastPlayerId = function() { lastPlayerId = arguments[0]; };
+              this.getLastPlayerId = function() { return lastPlayerId; };
+              
+              this.nextPlayer = function(players) {
                   var player = getPlayerFromId(players, lastPlayerId);
                   lastPlayerId++;
                   return player;
-              };
-              this.nextPlayer = function(players, playerId) {
-                  var tempId = playerId + 1;
-    
-                  if(playerId >= players.length)
-                      return getPlayerFromId(0);
-                  else
-                      return getPlayerFromId(tempId);
               };
               this.getHandSize = function() {
                   return 5;
@@ -345,11 +320,26 @@ limitations under the License.
               var me = this;
               var players = [];
               var decks = [];
-              var round = 0;
-              var castMessanger;
+              var round = 0
               var gameHasStarted = false;
               var gameType = new CardGame.Game();
+              var castMessanger;
               var visualManager;
+              
+              this.getPlayers = function() { return players;}
+              this.setPlayers = function() { players = arguments[0];}
+              this.getDecks = function() { return decks;}
+              this.setDecks = function() { decks = arguments[0];}
+              this.getRound = function(){ return round;}
+              this.setRound = function() { round = arguments[0];}
+              this.getHasGameStarted = function() { return gameHasStarted; };
+              this.setHasGameStarted = function() { gameHasStarted = arguments[0]; };
+              this.getGameType = function() { return gameType; }
+              this.setGameType = function() { gameType = arguments[0]; };
+              this.getCastMessanger = function() { return castMessanger; };
+              this.setCastMessanger = function() { castMessanger = arguments[0]; };
+              this.getVisualManager = function() { return visualManager; };
+              this.setVisualManager = function() { visualManager = arguments[0]; }
     
               this.getIdSender = function (senderId) {
                   return (getPlayerFromSenderId(senderId).getPlayerId());
@@ -397,19 +387,6 @@ limitations under the License.
                   gameHasStarted = true;
                   startNewRound();
               };
-              
-              this.getRound = function(){ return round;}
-              this.setRound = function() { round = arguments[0];}
-              this.getDecks = function(){ return decks;}
-              this.setDecks = function() { decks = arguments[0];}
-              this.getPlayers = function(){ return players;}
-              this.setPlayers = function() { players = arguments[0];}
-              this.getGameType = function(){ return gameType;}
-              this.setGameType = function() { gameType = arguments[0];}
-              this.getVisualManager = function(){ return visualManager; };
-              this.setVisualManager = function(){ visualManager = arguments[0]; }
-              this.getCastMessanger = function(){ return castMessanger; };
-              this.setCastMessanger = function(){ castMessanger = arguments[0]; };
 
               this.onReceivedEndGame = function (senderId, message) {
                   alert("Game Ended");
@@ -502,7 +479,7 @@ limitations under the License.
                   }
     
                   message["players"] = JSON.stringify(arrayOfPlayers);
-                  message["starting_player"] = gameType.startingPlayer(players).getPlayerId();
+                  message["starting_player"] = gameType.nextPlayer(players).getPlayerId();
                   message["current_round"] = round;
     
                   for (var i = 0; i < players.length; i++){
@@ -873,7 +850,7 @@ limitations under the License.
                   }
     
                   message["players"] = JSON.stringify(arrayOfPlayers);
-                  var startingPlayer = gameType.startingPlayer(players)
+                  var startingPlayer = gameType.nextPlayer(players)
                   message["starting_player"] = startingPlayer.getPlayerId();
                   message["current_round"] = round;
                   var firstCard = parnetDecks[0].draw(1)[0];
