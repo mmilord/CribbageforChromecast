@@ -3,6 +3,51 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/card"
-    android:background="@android:color/black">
+    android:background="@drawable/shape"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="3dp"
+    android:layout_marginTop="@dimen/card_margin_top"
+    android:layout_marginBottom="@dimen/card_margin_bottom"
+    android:elevation="5dp"
+    android:clipToPadding="false"
+    android:animateLayoutChanges="true">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:layout_marginLeft="5dp"
+        android:text="3\n♥"
+        android:gravity="center"
+        android:id="@+id/card1rank"
+        android:textSize="20sp"
+        android:textColor="#ffff0000"
+        android:fontFamily="sans" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="0dp"
+        android:layout_marginRight="5dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="3\n♥"
+        android:gravity="center"
+        android:id="@+id/card1rankDown"
+        android:textSize="20sp"
+        android:textColor="#ffff0000"
+        android:rotation = "180"
+        android:fontFamily="sans" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="T\nH\nR\nE\nE"
+        android:id="@+id/card1rankBig"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:textColor="#ffff0000"
+        android:fontFamily="sans-serif-light"
+        android:gravity="center" />
 
 </RelativeLayout>
