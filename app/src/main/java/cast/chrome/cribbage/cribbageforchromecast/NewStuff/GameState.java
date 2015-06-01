@@ -22,10 +22,15 @@ public class GameState implements CastToGSListener {
     private int activePlayer;
     private int round;
     ChromecastControl chromecastControl;
+    private GSToActivityListener gsToActivityListener;
 
     public GameState (Context context, String appID, String tag) {
         chromecastControl = new ChromecastControl(context, appID, tag);
         chromecastControl.setCastToGSListener(this);
+
+    }
+    public void setCastToGSListener (GSToActivityListener gsToActivityListener) {
+        this.gsToActivityListener = gsToActivityListener;
     }
 
     public List<Card> getActiveCards() {
@@ -48,42 +53,47 @@ public class GameState implements CastToGSListener {
         chromecastControl.teardown();
     }
 
-    public void JoinGame () {
+    public void joinGame() {
         chromecastControl.sendMessage(JSONHandler.PackageGenericJson(SendKeys.JOIN, SendKeys.GAME_TYPE, "crazy8").toString());
     }
 
-    public void StartGame (int numberOfPlayers) {
+    public void startGame(int numberOfPlayers) {
         chromecastControl.sendMessage(JSONHandler.PackageGenericJson(SendKeys.START_GAME).toString());
     }
 
-    public void EndGame () {
+    public void endGame() {
         chromecastControl.sendMessage(JSONHandler.PackageGenericJson(SendKeys.GAME_OVER, SendKeys.WINNER_ID, Integer.toString(systemPlayerId)).toString());
     }
 
-    public void ReadySetNewRound () {
+    public void readySetNewRound() {
         //call chromecast newround()
     }
 
-    public void PlayCard (int card) {
+    public void playCard(int cardPosition) {
         //tell chromecast playcard(card)
         //call drop method on view
-        playerList.get(systemPlayerId).removeCard(card);
+        chromecastControl.sendMessage(JSONHandler.PackageGenericJson(SendKeys.CARD_PLAYED, SendKeys.CARD, Integer.toString(playerList.get(systemPlayerId).getHand().get(cardPosition).getOrdinal())).toString());
+        playerList.get(systemPlayerId).removeCard(cardPosition);
     }
 
-    public void ChangeColor (Color color) {
+    public void changeColor(Color color) {
         chromecastControl.sendMessage(JSONHandler.PackageGenericJson(SendKeys.CHANGE_COLOR, SendKeys.COLOR, color.toString()).toString());
     }
 
-    public void ChangeName (String name) {
+    public void changeName(String name) {
         chromecastControl.sendMessage(JSONHandler.PackageGenericJson(SendKeys.CHANGE_NAME, SendKeys.NAME, name).toString());
     }
 
+    public void drawCard() {
+        chromecastControl.sendMessage(JSONHandler.PackageGenericJson(SendKeys.DRAW_CARD).toString());
+    }
+
     //called for each player ripped from json pack
-    public void SetHands (int playerId, Card[] hands) {
+    public void setHands (int playerId, Card[] hands) {
         this.playerList.get(playerId).setHand(hands);
     }
 
-    public void ReceiveNewRound (int round) {
+    public void receiveNewRound(int round) {
         this.round = round;
 
         for (int i = 0; i < playerList.size(); i++)
@@ -92,43 +102,84 @@ public class GameState implements CastToGSListener {
         //start round now
     }
 
-    public void RecieveDeck (Deck deck) {
+    public void recieveDeck(Deck deck) {
         this.deck = deck;
     }
 
-    public void RecievedCardPlayed (int playerId, int card) {
+    public void recievedCardPlayed(int playerId, int card) {
         playerList.get(playerId).removeCard(card);
         playerList.get(playerId).setHasPlayedThisRound(true);//hasplayed;
     }
 
-    public void ReceivedPlayerJoined (Player player) {
-
+    public void receivedPlayerJoined(Player player) {
+        playerList.add(player);
     }
 
-    public void ReceivedPlayerDisconnected (int playerId) {
+    public void receivedPlayerDisconnected(int playerId) {
         //pause and wait for reconnect
     }
 
-    public void RecievedStartCard (Card card) {
+    public void receivedStartCard(Card card) {
         activeCards.add(card);
     }
 
-    public void ReceivedEndRound() {
+    public void receivedEndRound() {
         //display round stats
         //prompt ready for next round
     }
 
-    public void ReceivedGameOver (int winPlayerId) {
+    public void receivedGameOver(int winPlayerId) {
         //display round stats
         //prompt ready for next round
     }
 
-    public void ReceivedPlayerTurn(int playerId) {
+    public void receivedDrawnCard(Card card) {
+        playerList.get(systemPlayerId).addCard(card);
+        gsToActivityListener.addCardToHand(playerList.get(systemPlayerId).getHand().size() - 1, card.getOrdinal());
+    }
+
+    public void receivedPlayerTurn(int playerId) {
         if (systemPlayerId == playerId) {
-            SystemPlayerControl.canPlay(activeCards, playerList.get(systemPlayerId).getHand());
+            //SystemPlayerControl.canPlay(activeCards, playerList.get(systemPlayerId).getHand());
+            if (!canPlayCard())
+                gsToActivityListener.enableDrawCardButton();
         }
         else {
             //display "currently playerlist(playerid).getName()'s turn"
         }
+    }
+
+    public void receivedSystemPlayerId(int systemPlayerId) {
+        this.systemPlayerId = systemPlayerId;
+    }
+
+    public void receivedPlayers(List<Player> playerList) {
+        this.playerList = playerList;
+    }
+
+    public void prepGameSetup() {
+        gsToActivityListener.prepGameSetup();
+    }
+
+    public boolean canPlayCard() {
+        boolean canPlay = false;
+
+        Card lastPlayedCard = activeCards.get(activeCards.size() - 1);
+        for (int i = 0; i < playerList.get(systemPlayerId).getHand().size(); i++) {
+            Card tempCard = playerList.get(systemPlayerId).getHand().get(i);
+            if (lastPlayedCard.getSuit() != tempCard.getSuit() &&
+                    tempCard.getRank() != lastPlayedCard.getRank() && tempCard.getRank() != 8) {
+                gsToActivityListener.setCardUnselectable(i);
+            }
+            else {
+                canPlay = true;
+            }
+        }
+
+        return canPlay;
+    }
+
+    public void initCardLayouts () {
+        gsToActivityListener.initCardLayouts(playerList.get(systemPlayerId).getHand());
     }
 }

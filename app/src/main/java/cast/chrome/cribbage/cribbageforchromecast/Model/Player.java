@@ -11,12 +11,12 @@ import java.util.List;
  */
 public class Player {
     private List<Card> hand = new ArrayList<Card>();
-    private Color color;
+    private String color;
     private String name;
     private int id;
     private boolean hasPlayedThisRound;
 
-    public Player (int id, Color color, String name) {
+    public Player (int id, String color, String name) {
         this.id = id;
         this.color = color;
         this.name = name;
@@ -32,6 +32,10 @@ public class Player {
 
     public void setHand (Card[] hand) {
         this.hand = Arrays.asList(hand);
+    }
+
+    public void addCard (Card cardToAdd) {
+        hand.add(cardToAdd);
     }
 
     public void removeCard (int cardToRemove) {

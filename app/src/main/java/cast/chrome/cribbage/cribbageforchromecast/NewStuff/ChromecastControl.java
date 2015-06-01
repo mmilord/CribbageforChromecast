@@ -29,7 +29,7 @@ import cast.chrome.cribbage.cribbageforchromecast.R;
 /**
  * Created by interns on 5/10/15.
  */
-public class ChromecastControl extends MediaRouter.Callback implements GoogleApiClient.ConnectionCallbacks {
+public class ChromecastControl extends MediaRouter.Callback {
 
     private static final String TAG = PrimaryActivity.class.getSimpleName();
 
@@ -279,7 +279,8 @@ public class ChromecastControl extends MediaRouter.Callback implements GoogleApi
 
                                                 // set the initial instructions
                                                 // on the receiver
-                                                sendMessage("hi");
+                                                //sendMessage("hi");
+                                                //castToGSListener.prepGameSetup();
                                             } else {
                                                 Log.e(TAG,
                                                         "application could not launch");
@@ -301,82 +302,6 @@ public class ChromecastControl extends MediaRouter.Callback implements GoogleApi
             mWaitingForReconnect = true;
         }
     }
-
-    @Override
-    public void onConnected(Bundle connectionHint) {
-        Log.d(TAG, "onConnected");
-
-        if (mApiClient == null) {
-            // We got disconnected while this runnable was pending
-            // execution.
-            return;
-        }
-
-        try {
-            if (mWaitingForReconnect) {
-                mWaitingForReconnect = false;
-
-                // Check if the receiver app is still running
-                if ((connectionHint != null) && connectionHint.getBoolean(Cast.EXTRA_APP_NO_LONGER_RUNNING)) {
-                    teardown();
-                } else {
-                    // Re-create the custom message channel
-                    try {
-                        Cast.CastApi.setMessageReceivedCallbacks(mApiClient, getNamespace(), mChromecastManagementChannel);
-                    } catch (IOException e) {
-                        Log.e(TAG, "Exception while creating channel", e);
-                    }
-                }
-            } else {
-                // Launch the receiver app
-                Cast.CastApi.launchApplication(mApiClient, context.getString(R.string.app_id), false)
-                        .setResultCallback(
-                                new ResultCallback<Cast.ApplicationConnectionResult>() {
-                                    @Override
-                                    public void onResult(Cast.ApplicationConnectionResult result) {
-                                        onConnectedResult(result);
-                                    }
-                                });
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to launch application", e);
-        }
-    }
-
-    public void onConnectedResult(Cast.ApplicationConnectionResult result){
-        Log.d(TAG, "ApplicationConnectionResultCallback.onResult: statusCode" + result.getStatus().getStatusCode());
-
-        if (result.getStatus().isSuccess()) {
-
-            Log.d(TAG, "application name: " + result.getApplicationMetadata().getName()
-                    + ", status: " + result.getApplicationStatus()
-                    + ", sessionId: " + result.getSessionId()
-                    + ", wasLaunched: " + result.getWasLaunched());
-
-            mApplicationStarted = true;
-
-            // Create the custom message
-            try {
-                Cast.CastApi.setMessageReceivedCallbacks(mApiClient, this.getNamespace(), mChromecastManagementChannel);
-            } catch (IOException e) {
-                Log.e(TAG, "Exception while creating channel", e);
-            }
-
-            // set the initial instructions
-            // on the receiver
-            //sendMessage("hi");
-        } else {
-            Log.e(TAG, "application could not launch");
-            teardown();
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-        Log.d(TAG, "onConnectionSuspended");
-        mWaitingForReconnect = true;
-    }
-
 
     private class ConnectionFailedListener implements
             GoogleApiClient.OnConnectionFailedListener {

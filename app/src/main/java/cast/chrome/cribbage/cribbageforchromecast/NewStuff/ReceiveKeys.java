@@ -22,4 +22,8 @@ public final class ReceiveKeys {
     public static final String GAME_OVER = "game_over";
     public static final String NEW_DECK = "deck_for_round";
     public static final String WINNER_ID = "winnder";
+    public static final String CARD_DRAWN = "card_drawn";
+    public static final String PLAYERS = "players";
+    public static final String PLAYERS_IN_GAME = "players_in_game";
+    public static final String PLAYER_ID = "player_id";
 }

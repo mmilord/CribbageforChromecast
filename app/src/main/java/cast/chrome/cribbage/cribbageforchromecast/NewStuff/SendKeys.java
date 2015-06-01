@@ -23,4 +23,7 @@ public final class SendKeys {
     public static final String JOIN = "join";
     public static final String START_GAME = "start";
     public static final String GAME_TYPE = "gameType";
+    public static final String DRAW_CARD = "draw_card";
+    public static final String CARD_PLAYED = "card_played";
+    public static final String CARD = "card";
 }

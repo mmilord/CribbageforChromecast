@@ -1,5 +1,8 @@
 package cast.chrome.cribbage.cribbageforchromecast.NewStuff;
 
+import java.util.List;
+
+import cast.chrome.cribbage.cribbageforchromecast.Model.Card;
 import cast.chrome.cribbage.cribbageforchromecast.Model.Player;
 
 /**
@@ -32,15 +35,23 @@ public interface CastToGSListener {
 
     public void initGame();*/
 
-    public void ReceiveNewRound (int round);
+    void receiveNewRound(int round);
 
-    public void ReceivedEndRound();
+    void receivedEndRound();
 
-    public void ReceivedGameOver (int winPlayerId);
+    void receivedGameOver(int winPlayerId);
 
-    public void ReceivedPlayerTurn(int playerId);
+    void receivedPlayerTurn(int playerId);
     
-    public void ReceivedPlayerJoined (Player player);
+    void receivedPlayerJoined(Player player);
 
-    public void ReceivedPlayerDisconnected (int playerId);
+    void receivedPlayerDisconnected(int playerId);
+
+    void receivedSystemPlayerId(int systemId);
+
+    void receivedPlayers(List<Player> playerList);
+
+    void prepGameSetup();
+
+    void receivedDrawnCard(Card card);
 }

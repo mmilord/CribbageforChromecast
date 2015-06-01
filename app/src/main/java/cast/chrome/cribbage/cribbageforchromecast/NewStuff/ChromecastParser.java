@@ -30,6 +30,9 @@ public class ChromecastParser {
             } else if (keyCommand.equals(ReceiveKeys.PLAYER_TURN)) {
                 Log.d(TAG, "player turn received");
                 JSONHandler.onReceivedPlayerTurn(jsonObject, castToGSListener);
+            } else if (keyCommand.equals(ReceiveKeys.CARD_DRAWN)) {
+                Log.d(TAG, "drawn card recieved");
+                JSONHandler.onReceivedDrawnCard(jsonObject, castToGSListener);
             } else if (keyCommand.equals(ReceiveKeys.PLAYER_JOINED)) {
                 Log.d(TAG, "Played joined recieved");
                 JSONHandler.onReceivedPlayerJoined(jsonObject, castToGSListener);
@@ -42,6 +45,15 @@ public class ChromecastParser {
             } else if (keyCommand.equals(ReceiveKeys.GAME_OVER)) {
                 Log.d(TAG, "game over receieved");
                 JSONHandler.onReceivedGameOver(jsonObject, castToGSListener);
+            } else if (keyCommand.equals(ReceiveKeys.PLAYERS)) {
+                Log.d(TAG, "players receieved");
+                JSONHandler.onReceivedGameOver(jsonObject, castToGSListener);
+            } else if (keyCommand.equals(ReceiveKeys.PLAYERS_IN_GAME)) {
+                Log.d(TAG, "players ingame receieved");
+                JSONHandler.onReceivedPlayers(jsonObject, castToGSListener);
+            } else if (keyCommand.equals(ReceiveKeys.PLAYER_ID)) {
+                Log.d(TAG, "player id receieved");
+                JSONHandler.onReceivedSystemPlayerId(jsonObject, castToGSListener);
             } else {
                 Log.d(TAG, "Invalid key command");
             }

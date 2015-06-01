@@ -1,12 +1,15 @@
 package cast.chrome.cribbage.cribbageforchromecast.NewStuff;
 
-import android.graphics.Color;
 import android.util.Log;
-import android.view.ViewGroup;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import cast.chrome.cribbage.cribbageforchromecast.Model.Player;
 import cast.chrome.cribbage.cribbageforchromecast.PrimaryActivity;
 
 /**
@@ -57,7 +60,7 @@ public class JSONHandler {
         int round = 0;
         try {
             round = Integer.parseInt(jsonObject.getString("round_number"));
-            castToGSListener.ReceiveNewRound(round);
+            castToGSListener.receiveNewRound(round);
         } catch (JSONException e) {
             Log.e (TAG, "fail grabbing received card", e);
         }
@@ -65,40 +68,77 @@ public class JSONHandler {
 
     public static void onReceivedPlayerTurn (JSONObject jsonObject, CastToGSListener castToGSListener) {
         try {
-            castToGSListener.ReceivedPlayerTurn(jsonObject.getInt(ReceiveKeys.PLAYER_TURN));
+            castToGSListener.receivedPlayerTurn(jsonObject.getInt(ReceiveKeys.PLAYER_TURN));
         } catch (JSONException e) {
             Log.e(TAG, "fail getting player turn", e);
         }
     }
 
-    public static void onReceivedPlayerJoined (JSONObject jsonObject, CastToGSListener castToGSListener) {
-        /*try {
-            //create player object
-            Player player = new Player(jsonObject.getInt("id"), (Color)jsonObject.getString("color"),
-                jsonObject.getString("name"));
-            castToGSListener.ReceivedPlayerJoined(jsonObject.getInt(ReceiveKeys.PLAYER_TURN));
-        } catch (JSONException e) {
-            Log.e(TAG, "fail getting player turn", e);
-        }*/
-    }
-
     public static void onReceivedPlayerDisconnected (JSONObject jsonObject, CastToGSListener castToGSListener) {
         try {
-            castToGSListener.ReceivedPlayerDisconnected(jsonObject.getInt(ReceiveKeys.PLAYER_DROPPED));
+            castToGSListener.receivedPlayerDisconnected(jsonObject.getInt(ReceiveKeys.PLAYER_ID));
+        } catch (JSONException e) {
+            Log.e(TAG, "fail on player drop", e);
+        }
+    }
+
+    public static void onReceivedDrawnCard (JSONObject jsonObject, CastToGSListener castToGSListener) {
+        try {
+            castToGSListener.receivedPlayerDisconnected(jsonObject.getInt(ReceiveKeys.PLAYER_DROPPED));
         } catch (JSONException e) {
             Log.e(TAG, "fail on player drop", e);
         }
     }
 
     public static void onReceivedRoundEnd (JSONObject jsonObject, CastToGSListener castToGSListener) {
-        castToGSListener.ReceivedEndRound();
+        castToGSListener.receivedEndRound();
     }
 
     public static void onReceivedGameOver (JSONObject jsonObject, CastToGSListener castToGSListener) {
         try {
-            castToGSListener.ReceivedGameOver(jsonObject.getInt(ReceiveKeys.WINNER_ID));
+            castToGSListener.receivedGameOver(jsonObject.getInt(ReceiveKeys.WINNER_ID));
         } catch (JSONException e) {
             Log.e(TAG, "fail on game end", e);
+        }
+    }
+
+    public static void onReceivedSystemPlayerId (JSONObject jsonObject, CastToGSListener castToGSListener) {
+        try {
+            castToGSListener.receivedSystemPlayerId(jsonObject.getInt("id"));
+        } catch (JSONException e) {
+            Log.e(TAG, "fail on system player get", e);
+        }
+    }
+
+    public static void onReceivedPlayerJoined (JSONObject jsonObject, CastToGSListener castToGSListener) {
+        try {
+            //create player object
+            jsonObject = (JSONObject) jsonObject.get("player");
+            castToGSListener.receivedPlayerJoined(new Player(jsonObject.getInt("id"), jsonObject.get("color").toString(), jsonObject.get("name").toString()));
+        } catch (JSONException e) {
+            Log.e(TAG, "fail getting player joined", e);
+        }
+    }
+
+    public static void onReceivedPlayers (JSONObject jsonObject, CastToGSListener castToGSListener) {
+        try {
+            List<Player> playerList = new ArrayList<>();
+            if (jsonObject.get("players") != null) {
+                JSONArray jsonArray = jsonObject.getJSONArray("players");
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    try {
+                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                        playerList.add(new Player(jsonObject1.getInt("id"), jsonObject1.get("color").toString(), jsonObject1.get("name").toString()));
+                    } catch (JSONException e) {
+                        Log.e(TAG, "fail unwrap specific player", e);
+                    }
+                }
+            }
+
+            castToGSListener.receivedPlayers(playerList);
+        } catch (JSONException e) {
+            Log.e(TAG, "fail on unwrap players", e);
         }
     }
 
@@ -107,7 +147,7 @@ public class JSONHandler {
         try {
 
             deck = new Deck(jsonObject.getJSONObject("deck"));
-            castToGSListener.ReceiveNewRound(round);
+            castToGSListener.receiveNewRound(round);
         } catch (JSONException e) {
             Log.e (TAG, "fail grabbing received card", e);
         }

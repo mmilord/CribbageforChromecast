@@ -10,7 +10,7 @@ import org.json.JSONObject;
  */
 public class Card {
     private int cardRank, cardSuit;
-
+    private String rank, suit;
     private static String[] suitsArray = { "♠", "♥", "♦", "♣" };
     private static String[] ranksArray  = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
     private static int ordinal;
@@ -19,6 +19,29 @@ public class Card {
     {
         this.cardRank = cardRank;
         this.cardSuit = cardSuit;
+    }
+
+    public Card(int ordinalIn) {
+        int ordinalOffset;
+        ordinal = ordinalIn;
+
+        if (ordinalIn > 0 && ordinal <= 13) {
+            ordinalOffset = 0;
+            suit = suitsArray[ordinalOffset];
+            rank = ranksArray[ordinal - (13 * ordinalOffset)];
+        } else if (ordinalIn > 13 && ordinal <= 26) {
+            ordinalOffset = 1;
+            suit = suitsArray[ordinalOffset];
+            rank = ranksArray[ordinal - (13 * ordinalOffset)];
+        } else if (ordinalIn > 26 && ordinal <= 39) {
+            ordinalOffset = 2;
+            suit = suitsArray[ordinalOffset];
+            rank = ranksArray[ordinal - (13 * ordinalOffset)];
+        } else if (ordinalIn > 39 && ordinal <= 52) {
+            ordinalOffset = 3;
+            suit = suitsArray[ordinalOffset];
+            rank = ranksArray[ordinal - (13 * ordinalOffset)];
+        }
     }
 
     public @Override String toString()
@@ -34,8 +57,28 @@ public class Card {
         return cardSuit;
     }
 
-    public Card (int cardNumber) throws Exception {
+    public int getOrdinal() { return ordinal; }
 
+    public void initFromOrdinal (int ordinalIn) {
+        int ordinalOffset;
+        ordinal = ordinalIn;
+        if (ordinalIn > 0 && ordinal <= 13) {
+            ordinalOffset = 0;
+            suit = suitsArray[ordinalOffset];
+            rank = ranksArray[ordinal - (13 * ordinalOffset)];
+        } else if (ordinalIn > 13 && ordinal <= 26) {
+            ordinalOffset = 1;
+            suit = suitsArray[ordinalOffset];
+            rank = ranksArray[ordinal - (13 * ordinalOffset)];
+        } else if (ordinalIn > 26 && ordinal <= 39) {
+            ordinalOffset = 2;
+            suit = suitsArray[ordinalOffset];
+            rank = ranksArray[ordinal - (13 * ordinalOffset)];
+        } else if (ordinalIn > 39 && ordinal <= 52) {
+            ordinalOffset = 3;
+            suit = suitsArray[ordinalOffset];
+            rank = ranksArray[ordinal - (13 * ordinalOffset)];
+        }
     }
 
     public JSONObject toJson() {
